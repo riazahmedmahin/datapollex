@@ -1,12 +1,11 @@
-import 'package:datapollex/screens/student_chat_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:lottie/lottie.dart';
 import 'package:provider/provider.dart';
 import 'dart:async';
 import 'package:intl/intl.dart';
-
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -28,8 +27,233 @@ class MyApp extends StatelessWidget {
           primarySwatch: Colors.blue,
           visualDensity: VisualDensity.adaptivePlatformDensity,
         ),
-        home: AuthWrapper(),
+        home: SplashScreen(), // Changed from AuthWrapper to SplashScreen
         debugShowCheckedModeBanner: false,
+      ),
+    );
+  }
+}
+
+class SplashScreen extends StatefulWidget {
+  @override
+  _SplashScreenState createState() => _SplashScreenState();
+}
+
+class _SplashScreenState extends State<SplashScreen>
+    with TickerProviderStateMixin {
+  late AnimationController _fadeController;
+  late AnimationController _scaleController;
+  late AnimationController _rotationController;
+  late Animation<double> _fadeAnimation;
+  late Animation<double> _scaleAnimation;
+  late Animation<double> _rotationAnimation;
+
+  @override
+  void initState() {
+    super.initState();
+
+    // Initialize animation controllers
+    _fadeController = AnimationController(
+      duration: Duration(milliseconds: 1500),
+      vsync: this,
+    );
+
+    _scaleController = AnimationController(
+      duration: Duration(milliseconds: 1200),
+      vsync: this,
+    );
+
+    _rotationController = AnimationController(
+      duration: Duration(milliseconds: 2000),
+      vsync: this,
+    );
+
+    // Initialize animations
+    _fadeAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(
+      CurvedAnimation(parent: _fadeController, curve: Curves.easeInOut),
+    );
+
+    _scaleAnimation = Tween<double>(begin: 0.5, end: 1.0).animate(
+      CurvedAnimation(parent: _scaleController, curve: Curves.elasticOut),
+    );
+
+    _rotationAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(
+      CurvedAnimation(parent: _rotationController, curve: Curves.easeInOut),
+    );
+
+    // Start animations
+    _startAnimations();
+
+    // Navigate after splash
+    _navigateAfterSplash();
+  }
+
+  void _startAnimations() async {
+    await Future.delayed(Duration(milliseconds: 300));
+    _fadeController.forward();
+
+    await Future.delayed(Duration(milliseconds: 200));
+    _scaleController.forward();
+
+    await Future.delayed(Duration(milliseconds: 100));
+    _rotationController.repeat();
+  }
+
+  void _navigateAfterSplash() async {
+    // Wait for animations and auth check
+    await Future.delayed(Duration(milliseconds: 4000));
+
+    if (mounted) {
+      Navigator.of(context).pushReplacement(
+        PageRouteBuilder(
+          pageBuilder:
+              (context, animation, secondaryAnimation) => AuthWrapper(),
+          transitionsBuilder: (context, animation, secondaryAnimation, child) {
+            return FadeTransition(opacity: animation, child: child);
+          },
+          transitionDuration: Duration(milliseconds: 500),
+        ),
+      );
+    }
+  }
+
+  @override
+  void dispose() {
+    _fadeController.dispose();
+    _scaleController.dispose();
+    _rotationController.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      body: Container(
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+            colors: [
+              Colors.blue.shade600,
+              Colors.purple.shade400,
+              Colors.blue.shade800,
+            ],
+          ),
+        ),
+        child: Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              // Animated Logo
+              AnimatedBuilder(
+                animation: _fadeAnimation,
+                builder: (context, child) {
+                  return FadeTransition(
+                    opacity: _fadeAnimation,
+                    child: ScaleTransition(
+                      scale: _scaleAnimation,
+                      child:  Lottie.asset(
+                        "assets/Learn.json",
+                        fit: BoxFit.cover,
+                      ),
+                    ),
+                  );
+                },
+              ),
+              // Lottie.asset(
+              //           "assets/Learn.json",
+              //           fit: BoxFit.cover,
+              //         ),
+
+              SizedBox(height: 30),
+
+              // App Title
+              AnimatedBuilder(
+                animation: _fadeAnimation,
+                builder: (context, child) {
+                  return FadeTransition(
+                    opacity: _fadeAnimation,
+                    child: Text(
+                      'Language Learning',
+                      style: TextStyle(
+                        fontSize: 28,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.white,
+                        letterSpacing: 1.2,
+                      ),
+                    ),
+                  );
+                },
+              ),
+
+              SizedBox(height: 10),
+
+              // Subtitle
+              AnimatedBuilder(
+                animation: _fadeAnimation,
+                builder: (context, child) {
+                  return FadeTransition(
+                    opacity: _fadeAnimation,
+                    child: Text(
+                      'Connect • Learn • Grow',
+                      style: TextStyle(
+                        fontSize: 16,
+                        color: Colors.white70,
+                        letterSpacing: 0.8,
+                      ),
+                    ),
+                  );
+                },
+              ),
+
+              SizedBox(height: 60),
+
+              // Loading Animation
+              AnimatedBuilder(
+                animation: _rotationAnimation,
+                builder: (context, child) {
+                  return FadeTransition(
+                    opacity: _fadeAnimation,
+                    child: RotationTransition(
+                      turns: _rotationAnimation,
+                      child: Container(
+                        width: 40,
+                        height: 40,
+                        decoration: BoxDecoration(
+                          border: Border.all(color: Colors.white, width: 3),
+                          borderRadius: BorderRadius.circular(20),
+                        ),
+                        child: Container(
+                          margin: EdgeInsets.all(8),
+                          decoration: BoxDecoration(
+                            color: Colors.white,
+                            borderRadius: BorderRadius.circular(10),
+                          ),
+                        ),
+                      ),
+                    ),
+                  );
+                },
+              ),
+
+              SizedBox(height: 20),
+
+              // Loading Text
+              AnimatedBuilder(
+                animation: _fadeAnimation,
+                builder: (context, child) {
+                  return FadeTransition(
+                    opacity: _fadeAnimation,
+                    child: Text(
+                      'Loading...',
+                      style: TextStyle(fontSize: 16, color: Colors.white70),
+                    ),
+                  );
+                },
+              ),
+            ],
+          ),
+        ),
       ),
     );
   }
@@ -41,15 +265,13 @@ class AuthWrapper extends StatelessWidget {
     return Consumer<AuthProvider>(
       builder: (context, authProvider, child) {
         if (authProvider.isLoading) {
-          return Scaffold(
-            body: Center(child: CircularProgressIndicator()),
-          );
+          return Scaffold(body: Center(child: CircularProgressIndicator()));
         }
-        
+
         if (authProvider.user == null) {
           return LoginScreen();
         }
-        
+
         return MainScreen();
       },
     );
@@ -130,7 +352,8 @@ class AuthProvider with ChangeNotifier {
 
   Future<void> _loadUserData(String uid) async {
     try {
-      final doc = await FirebaseFirestore.instance.collection('users').doc(uid).get();
+      final doc =
+          await FirebaseFirestore.instance.collection('users').doc(uid).get();
       if (doc.exists) {
         _user = UserModel.fromMap(doc.data()!);
       }
@@ -152,12 +375,17 @@ class AuthProvider with ChangeNotifier {
     }
   }
 
-  Future<bool> signUp(String email, String password, String name, String role, List<String> languages, double hourlyRate) async {
+  Future<bool> signUp(
+    String email,
+    String password,
+    String name,
+    String role,
+    List<String> languages,
+    double hourlyRate,
+  ) async {
     try {
-      final credential = await FirebaseAuth.instance.createUserWithEmailAndPassword(
-        email: email,
-        password: password,
-      );
+      final credential = await FirebaseAuth.instance
+          .createUserWithEmailAndPassword(email: email, password: password);
 
       final user = UserModel(
         id: credential.user!.uid,
@@ -191,7 +419,7 @@ class AuthProvider with ChangeNotifier {
             .collection('users')
             .doc(_user!.id)
             .update({'bio': bio});
-        
+
         _user = UserModel(
           id: _user!.id,
           name: _user!.name,
@@ -212,18 +440,19 @@ class AuthProvider with ChangeNotifier {
   Future<bool> acceptBooking(String scheduleId, String notificationId) async {
     try {
       // Get the schedule details first
-      final scheduleDoc = await FirebaseFirestore.instance
-          .collection('schedules')
-          .doc(scheduleId)
-          .get();
-    
+      final scheduleDoc =
+          await FirebaseFirestore.instance
+              .collection('schedules')
+              .doc(scheduleId)
+              .get();
+
       if (!scheduleDoc.exists) {
         print('Schedule not found');
         return false;
       }
-    
+
       final scheduleData = scheduleDoc.data()!;
-    
+
       // Update schedule status to accepted
       await FirebaseFirestore.instance
           .collection('schedules')
@@ -237,9 +466,7 @@ class AuthProvider with ChangeNotifier {
           .delete();
 
       // Add the accepted course to student's bookings collection
-      await FirebaseFirestore.instance
-          .collection('student_bookings')
-          .add({
+      await FirebaseFirestore.instance.collection('student_bookings').add({
         'studentId': scheduleData['studentId'],
         'teacherId': scheduleData['teacherId'],
         'teacherName': scheduleData['teacherName'],
@@ -250,10 +477,10 @@ class AuthProvider with ChangeNotifier {
         'createdAt': FieldValue.serverTimestamp(),
         'modules': [
           'Module 1: Learn Grammar',
-          'Module 2: Learn Speaking', 
+          'Module 2: Learn Speaking',
           'Module 3: Learn Writing',
-          'Module 4: Learn Reading'
-        ]
+          'Module 4: Learn Reading',
+        ],
       });
 
       return true;
@@ -263,7 +490,7 @@ class AuthProvider with ChangeNotifier {
     }
   }
 }
-/////////
+
 class ScheduleSlot {
   final String id;
   final String teacherId;
@@ -275,7 +502,7 @@ class ScheduleSlot {
   final bool isBooked;
   final String? studentId;
   final String? studentName;
-  final String status; 
+  final String status;
   final String? courseName;
 
   ScheduleSlot({
@@ -298,9 +525,10 @@ class ScheduleSlot {
       id: map['id'] ?? '',
       teacherId: map['teacherId'] ?? '',
       teacherName: map['teacherName'] ?? '',
-      dateTime: map['dateTime'] is String 
-          ? DateTime.parse(map['dateTime'])
-          : (map['dateTime'] as Timestamp).toDate(),
+      dateTime:
+          map['dateTime'] is String
+              ? DateTime.parse(map['dateTime'])
+              : (map['dateTime'] as Timestamp).toDate(),
       duration: map['duration'] ?? 60,
       language: map['language'] ?? '',
       price: (map['price'] ?? 0.0).toDouble(),
@@ -399,7 +627,7 @@ class AppState with ChangeNotifier {
     'French',
     'German',
     'Japanese',
-    'Bengali'
+    'Bengali',
   ];
 
   void selectLanguage(String language) {
@@ -411,18 +639,19 @@ class AppState with ChangeNotifier {
   Future<bool> acceptBooking(String scheduleId, String notificationId) async {
     try {
       // Get the schedule details first
-      final scheduleDoc = await FirebaseFirestore.instance
-          .collection('schedules')
-          .doc(scheduleId)
-          .get();
-    
+      final scheduleDoc =
+          await FirebaseFirestore.instance
+              .collection('schedules')
+              .doc(scheduleId)
+              .get();
+
       if (!scheduleDoc.exists) {
         print('Schedule not found');
         return false;
       }
-    
+
       final scheduleData = scheduleDoc.data()!;
-    
+
       // Update schedule status to accepted
       await FirebaseFirestore.instance
           .collection('schedules')
@@ -436,9 +665,7 @@ class AppState with ChangeNotifier {
           .delete();
 
       // Add the accepted course to student's bookings collection
-      await FirebaseFirestore.instance
-          .collection('student_bookings')
-          .add({
+      await FirebaseFirestore.instance.collection('student_bookings').add({
         'studentId': scheduleData['studentId'],
         'teacherId': scheduleData['teacherId'],
         'teacherName': scheduleData['teacherName'],
@@ -452,14 +679,14 @@ class AppState with ChangeNotifier {
           'Module 2: Vocabulary Building',
           'Module 3: Conversation Practice',
           'Module 4: Reading Comprehension',
-          'Module 5: Writing Skills'
+          'Module 5: Writing Skills',
         ],
       });
 
       // Reload notifications to reflect the removal
       final _currentUser = FirebaseAuth.instance.currentUser;
       await loadTeacherNotifications(_currentUser?.uid ?? '');
-      
+
       return true;
     } catch (e) {
       print('Error accepting booking: $e');
@@ -472,15 +699,17 @@ class AppState with ChangeNotifier {
       _isLoading = true;
       notifyListeners();
 
-      final querySnapshot = await FirebaseFirestore.instance
-          .collection('users')
-          .where('role', isEqualTo: 'teacher')
-          .where('languages', arrayContains: language)
-          .get();
+      final querySnapshot =
+          await FirebaseFirestore.instance
+              .collection('users')
+              .where('role', isEqualTo: 'teacher')
+              .where('languages', arrayContains: language)
+              .get();
 
-      _teachers = querySnapshot.docs
-          .map((doc) => UserModel.fromMap(doc.data()))
-          .toList();
+      _teachers =
+          querySnapshot.docs
+              .map((doc) => UserModel.fromMap(doc.data()))
+              .toList();
 
       _isLoading = false;
       notifyListeners();
@@ -491,26 +720,36 @@ class AppState with ChangeNotifier {
     }
   }
 
-  Future<void> loadAvailableSlots(String teacherId, String language, String currentStudentId) async {
+  Future<void> loadAvailableSlots(
+    String teacherId,
+    String language,
+    String currentStudentId,
+  ) async {
     try {
       _isLoading = true;
       notifyListeners();
 
-      final querySnapshot = await FirebaseFirestore.instance
-          .collection('schedules')
-          .where('teacherId', isEqualTo: teacherId)
-          .where('language', isEqualTo: language)
-          .get();
+      final querySnapshot =
+          await FirebaseFirestore.instance
+              .collection('schedules')
+              .where('teacherId', isEqualTo: teacherId)
+              .where('language', isEqualTo: language)
+              .get();
 
-      _availableSlots = querySnapshot.docs.map((doc) {
-        final data = doc.data();
-        return ScheduleSlot.fromMap(data);
-      }).where((slot) {
-        return slot.dateTime.isAfter(DateTime.now()) && 
-               slot.status == 'available' && 
-               !slot.isBooked &&
-               slot.studentId != currentStudentId; // This ensures current student doesn't see their own booked slots
-      }).toList();
+      _availableSlots =
+          querySnapshot.docs
+              .map((doc) {
+                final data = doc.data();
+                return ScheduleSlot.fromMap(data);
+              })
+              .where((slot) {
+                return slot.dateTime.isAfter(DateTime.now()) &&
+                    slot.status == 'available' &&
+                    !slot.isBooked &&
+                    slot.studentId !=
+                        currentStudentId; // This ensures current student doesn't see their own booked slots
+              })
+              .toList();
 
       // Sort by date
       _availableSlots.sort((a, b) => a.dateTime.compareTo(b.dateTime));
@@ -524,16 +763,21 @@ class AppState with ChangeNotifier {
     }
   }
 
-  Future<bool> bookSlot(String slotId, String studentId, String studentName) async {
+  Future<bool> bookSlot(
+    String slotId,
+    String studentId,
+    String studentName,
+  ) async {
     try {
       // Get the slot details first
-      final slotDoc = await FirebaseFirestore.instance
-          .collection('schedules')
-          .doc(slotId)
-          .get();
-      
+      final slotDoc =
+          await FirebaseFirestore.instance
+              .collection('schedules')
+              .doc(slotId)
+              .get();
+
       if (!slotDoc.exists) return false;
-      
+
       final slotData = slotDoc.data()!;
       final slot = ScheduleSlot.fromMap(slotData);
 
@@ -542,11 +786,11 @@ class AppState with ChangeNotifier {
           .collection('schedules')
           .doc(slotId)
           .update({
-        'isBooked': true,
-        'studentId': studentId,
-        'studentName': studentName,
-        'status': 'pending',
-      });
+            'isBooked': true,
+            'studentId': studentId,
+            'studentName': studentName,
+            'status': 'pending',
+          });
 
       final notificationId = DateTime.now().millisecondsSinceEpoch.toString();
       final notification = NotificationModel(
@@ -554,7 +798,8 @@ class AppState with ChangeNotifier {
         teacherId: slot.teacherId,
         studentId: studentId,
         studentName: studentName,
-        message: '$studentName booked your ${slot.language} class slot at ${_formatDateTime(slot.dateTime)}',
+        message:
+            '$studentName booked your ${slot.language} class slot at ${_formatDateTime(slot.dateTime)}',
         scheduleId: slotId,
         createdAt: DateTime.now(),
       );
@@ -564,18 +809,20 @@ class AppState with ChangeNotifier {
           .collection('notifications')
           .doc(notificationId)
           .set(notification.toMap());
-      
-      print('Notification created for teacher ${slot.teacherId}: ${notification.message}');
-      
+
+      print(
+        'Notification created for teacher ${slot.teacherId}: ${notification.message}',
+      );
+
       notifyListeners();
-      
+
       if (_selectedLanguage.isNotEmpty && _availableSlots.isNotEmpty) {
         final teacherId = _availableSlots.first.teacherId;
         await loadAvailableSlots(teacherId, _selectedLanguage, studentId);
       }
-      
+
       await loadStudentBookedSlots(studentId);
-      
+
       return true;
     } catch (e) {
       print('Error booking slot: $e');
@@ -589,20 +836,26 @@ class AppState with ChangeNotifier {
           .collection('notifications')
           .where('teacherId', isEqualTo: teacherId)
           .snapshots()
-          .listen((snapshot) {
-        _notifications = snapshot.docs
-            .map((doc) => NotificationModel.fromMap(doc.data()))
-            .toList();
-        
-        _notifications.sort((a, b) => b.createdAt.compareTo(a.createdAt));
-        
-        notifyListeners();
-        print('Loaded ${_notifications.length} notifications for teacher $teacherId');
-      }, onError: (error) {
-        print('Error in notifications stream: $error');
-        _notifications = [];
-        notifyListeners();
-      });
+          .listen(
+            (snapshot) {
+              _notifications =
+                  snapshot.docs
+                      .map((doc) => NotificationModel.fromMap(doc.data()))
+                      .toList();
+
+              _notifications.sort((a, b) => b.createdAt.compareTo(a.createdAt));
+
+              notifyListeners();
+              print(
+                'Loaded ${_notifications.length} notifications for teacher $teacherId',
+              );
+            },
+            onError: (error) {
+              print('Error in notifications stream: $error');
+              _notifications = [];
+              notifyListeners();
+            },
+          );
     } catch (e) {
       print('Error loading teacher notifications: $e');
       _notifications = [];
@@ -612,16 +865,18 @@ class AppState with ChangeNotifier {
 
   Future<void> loadStudentBookedSlots(String studentId) async {
     try {
-      final querySnapshot = await FirebaseFirestore.instance
-          .collection('schedules')
-          .where('studentId', isEqualTo: studentId)
-          .where('isBooked', isEqualTo: true)
-          .get();
+      final querySnapshot =
+          await FirebaseFirestore.instance
+              .collection('schedules')
+              .where('studentId', isEqualTo: studentId)
+              .where('isBooked', isEqualTo: true)
+              .get();
 
-      final bookedSlots = querySnapshot.docs.map((doc) {
-        final data = doc.data();
-        return ScheduleSlot.fromMap(data);
-      }).toList();
+      final bookedSlots =
+          querySnapshot.docs.map((doc) {
+            final data = doc.data();
+            return ScheduleSlot.fromMap(data);
+          }).toList();
 
       // You can store these in a separate list if needed
       // _studentBookedSlots = bookedSlots;
@@ -630,27 +885,6 @@ class AppState with ChangeNotifier {
       print('Error loading student booked slots: $e');
     }
   }
-
-  // Future<bool> acceptBooking(String scheduleId, String notificationId) async {
-  //   try {
-  //     // Update schedule status
-  //     await FirebaseFirestore.instance
-  //         .collection('schedules')
-  //         .doc(scheduleId)
-  //         .update({'status': 'accepted'});
-
-  //     // Mark notification as read
-  //     await FirebaseFirestore.instance
-  //         .collection('notifications')
-  //         .doc(notificationId)
-  //         .update({'isRead': true});
-
-  //     return true;
-  //   } catch (e) {
-  //     print('Error accepting booking: $e');
-  //     return false;
-  //   }
-  // }
 
   String _formatDateTime(DateTime dateTime) {
     return '${dateTime.day}/${dateTime.month}/${dateTime.year} at ${dateTime.hour}:${dateTime.minute.toString().padLeft(2, '0')}';
@@ -692,7 +926,9 @@ class _LoginScreenState extends State<LoginScreen> {
               padding: EdgeInsets.all(24),
               child: Card(
                 elevation: 8,
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(16),
+                ),
                 child: Padding(
                   padding: EdgeInsets.all(24),
                   child: Form(
@@ -716,7 +952,9 @@ class _LoginScreenState extends State<LoginScreen> {
                         ),
                         SizedBox(height: 8),
                         Text(
-                          _isLogin ? 'Sign in to continue learning' : 'Create your account',
+                          _isLogin
+                              ? 'Sign in to continue learning'
+                              : 'Create your account',
                           style: TextStyle(
                             fontSize: 16,
                             color: Colors.grey.shade600,
@@ -731,7 +969,9 @@ class _LoginScreenState extends State<LoginScreen> {
                             decoration: InputDecoration(
                               labelText: 'Full Name',
                               prefixIcon: Icon(Icons.person),
-                              border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                              border: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(12),
+                              ),
                             ),
                             validator: (value) {
                               if (value == null || value.isEmpty) {
@@ -748,84 +988,109 @@ class _LoginScreenState extends State<LoginScreen> {
                             decoration: InputDecoration(
                               labelText: 'I am a',
                               prefixIcon: Icon(Icons.work),
-                              border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                              border: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(12),
+                              ),
                             ),
                             items: [
-                              DropdownMenuItem(value: 'student', child: Text('Student')),
-                              DropdownMenuItem(value: 'teacher', child: Text('Teacher')),
+                              DropdownMenuItem(
+                                value: 'student',
+                                child: Text('Student'),
+                              ),
+                              DropdownMenuItem(
+                                value: 'teacher',
+                                child: Text('Teacher'),
+                              ),
                             ],
                             onChanged: (value) {
                               setState(() {
                                 _selectedRole = value!;
+                                _selectedLanguages.clear();
                               });
                             },
                           ),
                           SizedBox(height: 16),
 
-                          // Language selection
-                          Container(
-                            decoration: BoxDecoration(
-                              border: Border.all(color: Colors.grey.shade400),
-                              borderRadius: BorderRadius.circular(12),
-                            ),
-                            padding: EdgeInsets.all(12),
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(
-                                  _selectedRole == 'teacher' ? 'Languages I can teach:' : 'Languages I want to learn:',
-                                  style: TextStyle(
-                                    fontSize: 16,
-                                    fontWeight: FontWeight.w500,
-                                    color: Colors.grey.shade700,
-                                  ),
-                                ),
-                                SizedBox(height: 8),
-                                Wrap(
-                                  spacing: 8,
-                                  children: ['English', 'Spanish', 'French', 'German', 'Japanese', 'Bengali']
-                                      .map((language) => FilterChip(
-                                            label: Text(language),
-                                            selected: _selectedLanguages.contains(language),
-                                            onSelected: (selected) {
-                                              setState(() {
-                                                if (selected) {
-                                                  _selectedLanguages.add(language);
-                                                } else {
-                                                  _selectedLanguages.remove(language);
-                                                }
-                                              });
-                                            },
-                                          ))
-                                      .toList(),
-                                ),
-                              ],
-                            ),
-                          ),
-                          SizedBox(height: 16),
-
-                          // Hourly rate (only for teachers)
                           if (_selectedRole == 'teacher') ...[
-                            TextFormField(
-                              controller: _rateController,
-                              decoration: InputDecoration(
-                                labelText: 'Hourly Rate (\$)',
-                                prefixIcon: Icon(Icons.attach_money),
-                                border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                            Container(
+                              decoration: BoxDecoration(
+                                border: Border.all(color: Colors.grey.shade400),
+                                borderRadius: BorderRadius.circular(12),
                               ),
-                              keyboardType: TextInputType.number,
-                              validator: (value) {
-                                if (value == null || value.isEmpty) {
-                                  return 'Please enter your hourly rate';
-                                }
-                                if (double.tryParse(value) == null) {
-                                  return 'Please enter a valid number';
-                                }
-                                return null;
-                              },
+                              padding: EdgeInsets.all(12),
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    'Languages I can teach:',
+                                    style: TextStyle(
+                                      fontSize: 16,
+                                      fontWeight: FontWeight.w500,
+                                      color: Colors.grey.shade700,
+                                    ),
+                                  ),
+                                  SizedBox(height: 8),
+                                  Wrap(
+                                    spacing: 8,
+                                    children:
+                                        [
+                                              'English',
+                                              'Spanish',
+                                              'French',
+                                              'German',
+                                              'Japanese',
+                                              'Bengali',
+                                            ]
+                                            .map(
+                                              (language) => FilterChip(
+                                                label: Text(language),
+                                                selected: _selectedLanguages
+                                                    .contains(language),
+                                                onSelected: (selected) {
+                                                  setState(() {
+                                                    if (selected) {
+                                                      _selectedLanguages.add(
+                                                        language,
+                                                      );
+                                                    } else {
+                                                      _selectedLanguages.remove(
+                                                        language,
+                                                      );
+                                                    }
+                                                  });
+                                                },
+                                              ),
+                                            )
+                                            .toList(),
+                                  ),
+                                ],
+                              ),
                             ),
                             SizedBox(height: 16),
                           ],
+
+                          // // Hourly rate (only for teachers)
+                          // if (_selectedRole == 'teacher') ...[
+                          //   TextFormField(
+                          //     controller: _rateController,
+                          //     decoration: InputDecoration(
+                          //       labelText: 'Hourly Rate (\$)',
+                          //       prefixIcon: Icon(Icons.attach_money),
+                          //       border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                          //     ),
+                          //     keyboardType: TextInputType.number,
+                          //     validator: (value) {
+                          //       if (value == null || value.isEmpty) {
+                          //         return 'Please enter your hourly rate';
+                          //       }
+                          //       if (double.tryParse(value) == null) {
+                          //         return 'Please enter a valid number';
+                          //       }
+                          //       return null;
+                          //     },
+                          //   ),
+                          //   SizedBox(height: 16),
+                          // ],
                         ],
 
                         // Email field
@@ -834,7 +1099,9 @@ class _LoginScreenState extends State<LoginScreen> {
                           decoration: InputDecoration(
                             labelText: 'Email',
                             prefixIcon: Icon(Icons.email),
-                            border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                            border: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(12),
+                            ),
                           ),
                           keyboardType: TextInputType.emailAddress,
                           validator: (value) {
@@ -855,7 +1122,9 @@ class _LoginScreenState extends State<LoginScreen> {
                           decoration: InputDecoration(
                             labelText: 'Password',
                             prefixIcon: Icon(Icons.lock),
-                            border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                            border: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(12),
+                            ),
                           ),
                           obscureText: true,
                           validator: (value) {
@@ -878,14 +1147,23 @@ class _LoginScreenState extends State<LoginScreen> {
                             onPressed: _isLoading ? null : _handleSubmit,
                             style: ElevatedButton.styleFrom(
                               backgroundColor: Colors.blue.shade600,
-                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(12),
+                              ),
                             ),
-                            child: _isLoading
-                                ? CircularProgressIndicator(color: Colors.white)
-                                : Text(
-                                    _isLogin ? 'Sign In' : 'Sign Up',
-                                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.white),
-                                  ),
+                            child:
+                                _isLoading
+                                    ? CircularProgressIndicator(
+                                      color: Colors.white,
+                                    )
+                                    : Text(
+                                      _isLogin ? 'Sign In' : 'Sign Up',
+                                      style: TextStyle(
+                                        fontSize: 18,
+                                        fontWeight: FontWeight.bold,
+                                        color: Colors.white,
+                                      ),
+                                    ),
                           ),
                         ),
                         SizedBox(height: 16),
@@ -919,9 +1197,11 @@ class _LoginScreenState extends State<LoginScreen> {
   Future<void> _handleSubmit() async {
     if (!_formKey.currentState!.validate()) return;
 
-    if (!_isLogin && _selectedLanguages.isEmpty) {
+    if (!_isLogin && _selectedRole == 'teacher' && _selectedLanguages.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Please select at least one language')),
+        SnackBar(
+          content: Text('Please select at least one language you can teach'),
+        ),
       );
       return;
     }
@@ -937,26 +1217,36 @@ class _LoginScreenState extends State<LoginScreen> {
         _passwordController.text,
       );
     } else {
-      final hourlyRate = _selectedRole == 'teacher' 
-          ? double.tryParse(_rateController.text) ?? 0.0 
-          : 0.0;
-      
+      final hourlyRate =
+          _selectedRole == 'teacher'
+              ? double.tryParse(_rateController.text) ?? 0.0
+              : 0.0;
+
+      final languages =
+          _selectedRole == 'student' ? <String>[] : _selectedLanguages;
+
       success = await authProvider.signUp(
         _emailController.text.trim(),
         _passwordController.text,
         _nameController.text.trim(),
         _selectedRole,
-        _selectedLanguages,
+        languages,
         hourlyRate,
       );
     }
 
-    setState(() => _isLoading = false);
+    if (mounted) {
+      setState(() => _isLoading = false);
+    }
 
-    if (!success) {
+    if (!success && mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text(_isLogin ? 'Login failed. Please try again.' : 'Registration failed. Please try again.'),
+          content: Text(
+            _isLogin
+                ? 'Login failed. Please try again.'
+                : 'Registration failed. Please try again.',
+          ),
           backgroundColor: Colors.red,
         ),
       );
@@ -975,25 +1265,48 @@ class _MainScreenState extends State<MainScreen> {
   @override
   Widget build(BuildContext context) {
     final user = Provider.of<AuthProvider>(context).user!;
-    
-    final List<Widget> screens = user.role == 'teacher'
-        ? [HomeScreen(), ScheduleManagementScreen(), NotificationsScreen(), ProfileScreen()]
-        : [HomeScreen(), StudentMyCoursesScreen(), ProfileScreen()];
 
-    final List<BottomNavigationBarItem> navItems = user.role == 'teacher'
-        ? [
-            BottomNavigationBarItem(icon: Icon(Icons.home), label: 'Home'),
-            BottomNavigationBarItem(icon: Icon(Icons.schedule), label: 'Schedule'),
-            //BottomNavigationBarItem(icon: Icon(Icons.school), label: 'My Courses'),
-            BottomNavigationBarItem(icon: Icon(Icons.notifications), label: 'Notifications'),
-            BottomNavigationBarItem(icon: Icon(Icons.person), label: 'Profile'),
-          ]
-        : [
-            BottomNavigationBarItem(icon: Icon(Icons.home), label: 'Home'),
-            //BottomNavigationBarItem(icon: Icon(Icons.book), label: 'My Classes'),
-            BottomNavigationBarItem(icon: Icon(Icons.school), label: 'My Courses'),
-            BottomNavigationBarItem(icon: Icon(Icons.person), label: 'Profile'),
-          ];
+    final List<Widget> screens =
+        user.role == 'teacher'
+            ? [
+              ScheduleManagementScreen(),
+              TeacherChatListScreen(),
+              NotificationsScreen(),
+              ProfileScreen(),
+            ]
+            : [HomeScreen(), StudentMyCoursesScreen(), ProfileScreen()];
+
+    final List<BottomNavigationBarItem> navItems =
+        user.role == 'teacher'
+            ? [
+              BottomNavigationBarItem(
+                icon: Icon(Icons.schedule),
+                label: 'Schedule',
+              ),
+              BottomNavigationBarItem(
+                icon: Icon(Icons.chat_bubble),
+                label: 'Chat',
+              ),
+              BottomNavigationBarItem(
+                icon: Icon(Icons.notifications),
+                label: 'Notifications',
+              ),
+              BottomNavigationBarItem(
+                icon: Icon(Icons.person),
+                label: 'Profile',
+              ),
+            ]
+            : [
+              BottomNavigationBarItem(icon: Icon(Icons.home), label: 'Home'),
+              BottomNavigationBarItem(
+                icon: Icon(Icons.school),
+                label: 'My Courses',
+              ),
+              BottomNavigationBarItem(
+                icon: Icon(Icons.person),
+                label: 'Profile',
+              ),
+            ];
 
     return Scaffold(
       body: screens[_currentIndex],
@@ -1007,7 +1320,6 @@ class _MainScreenState extends State<MainScreen> {
     );
   }
 }
-
 
 class StudentHomeContent extends StatelessWidget {
   @override
@@ -1028,7 +1340,7 @@ class StudentHomeContent extends StatelessWidget {
                 ),
               ),
               SizedBox(height: 16),
-              
+
               Expanded(
                 child: GridView.builder(
                   gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
@@ -1047,7 +1359,9 @@ class StudentHomeContent extends StatelessWidget {
                         Navigator.push(
                           context,
                           MaterialPageRoute(
-                            builder: (context) => TeachersListScreen(language: language),
+                            builder:
+                                (context) =>
+                                    TeachersListScreen(language: language),
                           ),
                         );
                       },
@@ -1072,7 +1386,9 @@ class TeacherHomeContent extends StatelessWidget {
         children: [
           Card(
             elevation: 4,
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(12),
+            ),
             child: Padding(
               padding: EdgeInsets.all(20),
               child: Column(
@@ -1095,14 +1411,21 @@ class TeacherHomeContent extends StatelessWidget {
                     onPressed: () {
                       Navigator.push(
                         context,
-                        MaterialPageRoute(builder: (context) => TeacherChatListScreen()),
+                        MaterialPageRoute(
+                          builder: (context) => TeacherChatListScreen(),
+                        ),
                       );
                     },
                     style: ElevatedButton.styleFrom(
                       backgroundColor: Colors.green.shade600,
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(8),
+                      ),
                     ),
-                    child: Text('View Messages', style: TextStyle(color: Colors.white)),
+                    child: Text(
+                      'View Messages',
+                      style: TextStyle(color: Colors.white),
+                    ),
                   ),
                 ],
               ),
@@ -1111,7 +1434,9 @@ class TeacherHomeContent extends StatelessWidget {
           SizedBox(height: 20),
           Card(
             elevation: 4,
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(12),
+            ),
             child: Padding(
               padding: EdgeInsets.all(20),
               child: Column(
@@ -1134,14 +1459,21 @@ class TeacherHomeContent extends StatelessWidget {
                     onPressed: () {
                       Navigator.push(
                         context,
-                        MaterialPageRoute(builder: (context) => ScheduleManagementScreen()),
+                        MaterialPageRoute(
+                          builder: (context) => ScheduleManagementScreen(),
+                        ),
                       );
                     },
                     style: ElevatedButton.styleFrom(
                       backgroundColor: Colors.blue.shade600,
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(8),
+                      ),
                     ),
-                    child: Text('Manage Schedule', style: TextStyle(color: Colors.white)),
+                    child: Text(
+                      'Manage Schedule',
+                      style: TextStyle(color: Colors.white),
+                    ),
                   ),
                 ],
               ),
@@ -1157,7 +1489,7 @@ class HomeScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final user = Provider.of<AuthProvider>(context).user!;
-    
+
     return Scaffold(
       body: Container(
         decoration: BoxDecoration(
@@ -1180,7 +1512,11 @@ class HomeScreen extends StatelessWidget {
                       backgroundColor: Colors.blue.shade600,
                       child: Text(
                         user.name.isNotEmpty ? user.name[0].toUpperCase() : 'U',
-                        style: TextStyle(color: Colors.white, fontSize: 20, fontWeight: FontWeight.bold),
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontSize: 20,
+                          fontWeight: FontWeight.bold,
+                        ),
                       ),
                     ),
                     SizedBox(width: 16),
@@ -1190,11 +1526,19 @@ class HomeScreen extends StatelessWidget {
                         children: [
                           Text(
                             'Hello, ${user.name}!',
-                            style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+                            style: TextStyle(
+                              fontSize: 17,
+                              fontWeight: FontWeight.bold,
+                            ),
                           ),
                           Text(
-                            user.role == 'teacher' ? 'Ready to teach today?' : 'Ready to learn something new?',
-                            style: TextStyle(fontSize: 16, color: Colors.grey.shade600),
+                            user.role == 'teacher'
+                                ? 'Ready to teach today?'
+                                : 'Ready to learn something new?',
+                            style: TextStyle(
+                              fontSize: 16,
+                              color: Colors.grey.shade600,
+                            ),
                           ),
                         ],
                       ),
@@ -1205,7 +1549,10 @@ class HomeScreen extends StatelessWidget {
 
               // Content based on user role
               Expanded(
-                child: user.role == 'teacher' ? TeacherHomeContent() : StudentHomeContent(),
+                child:
+                    user.role == 'teacher'
+                        ? TeacherHomeContent()
+                        : StudentHomeContent(),
               ),
             ],
           ),
@@ -1219,11 +1566,8 @@ class LanguageCard extends StatelessWidget {
   final String language;
   final VoidCallback onTap;
 
-  const LanguageCard({
-    Key? key,
-    required this.language,
-    required this.onTap,
-  }) : super(key: key);
+  const LanguageCard({Key? key, required this.language, required this.onTap})
+    : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -1245,11 +1589,7 @@ class LanguageCard extends StatelessWidget {
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                Icon(
-                  Icons.language,
-                  size: 40,
-                  color: Colors.white,
-                ),
+                Icon(Icons.language, size: 40, color: Colors.white),
                 SizedBox(height: 8),
                 Text(
                   language,
@@ -1271,7 +1611,8 @@ class LanguageCard extends StatelessWidget {
 class TeachersListScreen extends StatelessWidget {
   final String language;
 
-  const TeachersListScreen({Key? key, required this.language}) : super(key: key);
+  const TeachersListScreen({Key? key, required this.language})
+    : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -1308,10 +1649,7 @@ class TeachersListScreen extends StatelessWidget {
             itemCount: appState.teachers.length,
             itemBuilder: (context, index) {
               final teacher = appState.teachers[index];
-              return TeacherCard(
-                teacher: teacher,
-                language: language,
-              );
+              return TeacherCard(teacher: teacher, language: language);
             },
           );
         },
@@ -1324,11 +1662,8 @@ class TeacherCard extends StatelessWidget {
   final UserModel teacher;
   final String language;
 
-  const TeacherCard({
-    Key? key,
-    required this.teacher,
-    required this.language,
-  }) : super(key: key);
+  const TeacherCard({Key? key, required this.teacher, required this.language})
+    : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -1341,10 +1676,11 @@ class TeacherCard extends StatelessWidget {
           Navigator.push(
             context,
             MaterialPageRoute(
-              builder: (context) => TeacherProfileScreen(
-                teacher: teacher,
-                selectedLanguage: language,
-              ),
+              builder:
+                  (context) => TeacherProfileScreen(
+                    teacher: teacher,
+                    selectedLanguage: language,
+                  ),
             ),
           );
         },
@@ -1371,6 +1707,7 @@ class TeacherCard extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
                         Text(
                           teacher.name,
@@ -1379,17 +1716,40 @@ class TeacherCard extends StatelessWidget {
                             fontWeight: FontWeight.bold,
                           ),
                         ),
-                         IconButton(onPressed: (){
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (context) => StudentChatScreen(
-                                teacherId: teacher.id,
-                                teacherName: teacher.name,
+                        Container(
+                          width: 35,
+                          height: 35,
+                          decoration: BoxDecoration(
+                            shape: BoxShape.circle,
+                            color: Colors.black, // background color
+                            boxShadow: [
+                              BoxShadow(
+                                color: Colors.black26,
+                                blurRadius: 2,
+                                offset: Offset(1, 2),
                               ),
+                            ],
+                          ),
+                          child: IconButton(
+                            onPressed: () {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder:
+                                      (context) => StudentChatScreen(
+                                        teacherId: teacher.id,
+                                        teacherName: teacher.name,
+                                      ),
+                                ),
+                              );
+                            },
+                            icon: Icon(
+                              Icons.chat,
+                              size: 20,
+                              color: Colors.white, // icon color
                             ),
-                          );
-                    }, icon: Icon(Icons.chat)),
+                          ),
+                        ),
                       ],
                     ),
                     //SizedBox(height: 4),
@@ -1401,22 +1761,17 @@ class TeacherCard extends StatelessWidget {
                       ),
                     ),
                     SizedBox(height: 4),
-                   
-                    Text(
-                      '\$${teacher.hourlyRate.toStringAsFixed(0)}/hour',
-                      style: TextStyle(
-                        color: Colors.green.shade600,
-                        fontSize: 16,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
+
+                    // Text(
+                    //   '\$${teacher.hourlyRate.toStringAsFixed(0)}/hour',
+                    //   style: TextStyle(
+                    //     color: Colors.green.shade600,
+                    //     fontSize: 16,
+                    //     fontWeight: FontWeight.w600,
+                    //   ),
+                    // ),
                   ],
                 ),
-              ),
-              Icon(
-                Icons.arrow_forward_ios,
-                color: Colors.grey.shade400,
-                size: 16,
               ),
             ],
           ),
@@ -1446,8 +1801,13 @@ class _TeacherProfileScreenState extends State<TeacherProfileScreen> {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
       final appState = Provider.of<AppState>(context, listen: false);
-      final currentUser = Provider.of<AuthProvider>(context, listen: false).user!;
-      appState.loadAvailableSlots(widget.teacher.id, widget.selectedLanguage, currentUser.id);
+      final currentUser =
+          Provider.of<AuthProvider>(context, listen: false).user!;
+      appState.loadAvailableSlots(
+        widget.teacher.id,
+        widget.selectedLanguage,
+        currentUser.id,
+      );
     });
   }
 
@@ -1463,15 +1823,15 @@ class _TeacherProfileScreenState extends State<TeacherProfileScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Teacher Header
+            /// Teacher Header
             Container(
               width: double.infinity,
-              padding: EdgeInsets.all(24),
+              padding: const EdgeInsets.all(24),
               decoration: BoxDecoration(
                 gradient: LinearGradient(
+                  colors: [Colors.blue.shade600, Colors.blue.shade400],
                   begin: Alignment.topCenter,
                   end: Alignment.bottomCenter,
-                  colors: [Colors.blue.shade600, Colors.blue.shade400],
                 ),
               ),
               child: Column(
@@ -1480,7 +1840,9 @@ class _TeacherProfileScreenState extends State<TeacherProfileScreen> {
                     radius: 50,
                     backgroundColor: Colors.white,
                     child: Text(
-                      widget.teacher.name.isNotEmpty ? widget.teacher.name[0].toUpperCase() : 'T',
+                      widget.teacher.name.isNotEmpty
+                          ? widget.teacher.name[0].toUpperCase()
+                          : 'T',
                       style: TextStyle(
                         color: Colors.blue.shade600,
                         fontSize: 32,
@@ -1488,34 +1850,26 @@ class _TeacherProfileScreenState extends State<TeacherProfileScreen> {
                       ),
                     ),
                   ),
-                  SizedBox(height: 16),
+                  const SizedBox(height: 16),
                   Text(
                     widget.teacher.name,
-                    style: TextStyle(
+                    style: const TextStyle(
                       color: Colors.white,
                       fontSize: 24,
                       fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                  SizedBox(height: 8),
-                  Text(
-                    '\$${widget.teacher.hourlyRate.toStringAsFixed(0)}/hour',
-                    style: TextStyle(
-                      color: Colors.white,
-                      fontSize: 18,
-                      fontWeight: FontWeight.w600,
                     ),
                   ),
                 ],
               ),
             ),
 
+            /// Content
             Padding(
-              padding: EdgeInsets.all(20),
+              padding: const EdgeInsets.all(20),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  // About Section
+                  /// About Section
                   if (widget.teacher.bio.isNotEmpty) ...[
                     Text(
                       'About',
@@ -1525,7 +1879,7 @@ class _TeacherProfileScreenState extends State<TeacherProfileScreen> {
                         color: Colors.grey.shade800,
                       ),
                     ),
-                    SizedBox(height: 8),
+                    const SizedBox(height: 8),
                     Text(
                       widget.teacher.bio,
                       style: TextStyle(
@@ -1534,10 +1888,10 @@ class _TeacherProfileScreenState extends State<TeacherProfileScreen> {
                         height: 1.5,
                       ),
                     ),
-                    SizedBox(height: 24),
+                    const SizedBox(height: 24),
                   ],
 
-                  // Languages Section
+                  /// Languages Section
                   Text(
                     'Languages',
                     style: TextStyle(
@@ -1546,31 +1900,45 @@ class _TeacherProfileScreenState extends State<TeacherProfileScreen> {
                       color: Colors.grey.shade800,
                     ),
                   ),
-                  SizedBox(height: 12),
+                  const SizedBox(height: 12),
                   Wrap(
                     spacing: 8,
                     runSpacing: 8,
-                    children: widget.teacher.languages.map((language) {
-                      final isSelected = language == widget.selectedLanguage;
-                      return Container(
-                        padding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                        decoration: BoxDecoration(
-                          color: isSelected ? Colors.blue.shade600 : Colors.grey.shade200,
-                          borderRadius: BorderRadius.circular(20),
-                        ),
-                        child: Text(
-                          language,
-                          style: TextStyle(
-                            color: isSelected ? Colors.white : Colors.grey.shade700,
-                            fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,
-                          ),
-                        ),
-                      );
-                    }).toList(),
+                    children:
+                        widget.teacher.languages.map((language) {
+                          final isSelected =
+                              language == widget.selectedLanguage;
+                          return Container(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 16,
+                              vertical: 8,
+                            ),
+                            decoration: BoxDecoration(
+                              color:
+                                  isSelected
+                                      ? Colors.blue.shade600
+                                      : Colors.grey.shade200,
+                              borderRadius: BorderRadius.circular(20),
+                            ),
+                            child: Text(
+                              language,
+                              style: TextStyle(
+                                color:
+                                    isSelected
+                                        ? Colors.white
+                                        : Colors.grey.shade700,
+                                fontWeight:
+                                    isSelected
+                                        ? FontWeight.w600
+                                        : FontWeight.normal,
+                              ),
+                            ),
+                          );
+                        }).toList(),
                   ),
-                  SizedBox(height: 24),
+                  const SizedBox(height: 24),
 
-                  // Available Slots Section
+                  /// Available Slots Section
                   Consumer<AppState>(
                     builder: (context, appState, child) {
                       return Column(
@@ -1586,10 +1954,13 @@ class _TeacherProfileScreenState extends State<TeacherProfileScreen> {
                                   color: Colors.grey.shade800,
                                 ),
                               ),
-                              SizedBox(width: 8),
+                              const SizedBox(width: 8),
                               if (appState.availableSlots.isNotEmpty)
                                 Container(
-                                  padding: EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 8,
+                                    vertical: 4,
+                                  ),
                                   decoration: BoxDecoration(
                                     color: Colors.green.shade100,
                                     borderRadius: BorderRadius.circular(12),
@@ -1605,10 +1976,10 @@ class _TeacherProfileScreenState extends State<TeacherProfileScreen> {
                                 ),
                             ],
                           ),
-                          SizedBox(height: 16),
+                          const SizedBox(height: 16),
 
                           if (appState.isLoading)
-                            Center(
+                            const Center(
                               child: Padding(
                                 padding: EdgeInsets.all(20),
                                 child: CircularProgressIndicator(),
@@ -1617,7 +1988,7 @@ class _TeacherProfileScreenState extends State<TeacherProfileScreen> {
                           else if (appState.availableSlots.isEmpty)
                             Container(
                               width: double.infinity,
-                              padding: EdgeInsets.all(24),
+                              padding: const EdgeInsets.all(24),
                               decoration: BoxDecoration(
                                 color: Colors.grey.shade50,
                                 borderRadius: BorderRadius.circular(12),
@@ -1630,7 +2001,7 @@ class _TeacherProfileScreenState extends State<TeacherProfileScreen> {
                                     size: 48,
                                     color: Colors.grey.shade400,
                                   ),
-                                  SizedBox(height: 12),
+                                  const SizedBox(height: 12),
                                   Text(
                                     'No available slots',
                                     style: TextStyle(
@@ -1639,7 +2010,7 @@ class _TeacherProfileScreenState extends State<TeacherProfileScreen> {
                                       color: Colors.grey.shade600,
                                     ),
                                   ),
-                                  SizedBox(height: 4),
+                                  const SizedBox(height: 4),
                                   Text(
                                     'Check back later for new availability',
                                     style: TextStyle(
@@ -1652,12 +2023,13 @@ class _TeacherProfileScreenState extends State<TeacherProfileScreen> {
                             )
                           else
                             Column(
-                              children: appState.availableSlots.map((slot) {
-                                return SlotCard(
-                                  slot: slot,
-                                  onBook: () => _bookSlot(context, slot),
-                                );
-                              }).toList(),
+                              children:
+                                  appState.availableSlots.map((slot) {
+                                    return SlotCard(
+                                      slot: slot,
+                                      onBook: () => _bookSlot(context, slot),
+                                    );
+                                  }).toList(),
                             ),
                         ],
                       );
@@ -1676,46 +2048,50 @@ class _TeacherProfileScreenState extends State<TeacherProfileScreen> {
     final currentUser = Provider.of<AuthProvider>(context, listen: false).user!;
     final appState = Provider.of<AppState>(context, listen: false);
 
-    // Show confirmation dialog
     final confirmed = await showDialog<bool>(
       context: context,
-      builder: (context) => AlertDialog(
-        title: Text('Confirm Booking'),
-        content: Text(
-          'Book this ${slot.language} lesson for ${_formatDateTime(slot.dateTime)}?\n\nPrice: \$${slot.price.toStringAsFixed(2)}',
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context, false),
-            child: Text('Cancel'),
+      builder:
+          (context) => AlertDialog(
+            title: const Text('Confirm Booking'),
+            content: Text(
+              'Book this ${slot.language} lesson for ${_formatDateTime(slot.dateTime)}?\n\nPrice: \$${slot.price.toStringAsFixed(2)}',
+            ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(context, false),
+                child: const Text('Cancel'),
+              ),
+              ElevatedButton(
+                onPressed: () => Navigator.pop(context, true),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.blue.shade600,
+                ),
+                child: const Text(
+                  'Book Now',
+                  style: TextStyle(color: Colors.white),
+                ),
+              ),
+            ],
           ),
-          ElevatedButton(
-            onPressed: () => Navigator.pop(context, true),
-            style: ElevatedButton.styleFrom(backgroundColor: Colors.blue.shade600),
-            child: Text('Book Now', style: TextStyle(color: Colors.white)),
-          ),
-        ],
-      ),
     );
 
     if (confirmed == true) {
-      final success = await appState.bookSlot(slot.id, currentUser.id, currentUser.name);
-      
-      if (success) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Lesson booked successfully! Waiting for teacher confirmation.'),
-            backgroundColor: Colors.green,
+      final success = await appState.bookSlot(
+        slot.id,
+        currentUser.id,
+        currentUser.name,
+      );
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            success
+                ? 'Lesson booked successfully! Waiting for teacher confirmation.'
+                : 'Failed to book lesson. Please try again.',
           ),
-        );
-      } else {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Failed to book lesson. Please try again.'),
-            backgroundColor: Colors.red,
-          ),
-        );
-      }
+          backgroundColor: success ? Colors.green : Colors.red,
+        ),
+      );
     }
   }
 
@@ -1728,11 +2104,8 @@ class SlotCard extends StatelessWidget {
   final ScheduleSlot slot;
   final VoidCallback onBook;
 
-  const SlotCard({
-    Key? key,
-    required this.slot,
-    required this.onBook,
-  }) : super(key: key);
+  const SlotCard({Key? key, required this.slot, required this.onBook})
+    : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -1759,11 +2132,7 @@ class SlotCard extends StatelessWidget {
                   color: Colors.blue.shade600,
                   borderRadius: BorderRadius.circular(8),
                 ),
-                child: Icon(
-                  Icons.schedule,
-                  color: Colors.white,
-                  size: 24,
-                ),
+                child: Icon(Icons.schedule, color: Colors.white, size: 24),
               ),
               SizedBox(width: 16),
               Expanded(
@@ -1802,7 +2171,9 @@ class SlotCard extends StatelessWidget {
                 onPressed: onBook,
                 style: ElevatedButton.styleFrom(
                   backgroundColor: Colors.blue.shade600,
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(8),
+                  ),
                 ),
                 child: Text('Book', style: TextStyle(color: Colors.white)),
               ),
@@ -1818,10 +2189,10 @@ class SlotCard extends StatelessWidget {
   }
 }
 
-
 class ScheduleManagementScreen extends StatefulWidget {
   @override
-  _ScheduleManagementScreenState createState() => _ScheduleManagementScreenState();
+  _ScheduleManagementScreenState createState() =>
+      _ScheduleManagementScreenState();
 }
 
 class _ScheduleManagementScreenState extends State<ScheduleManagementScreen> {
@@ -1846,16 +2217,18 @@ class _ScheduleManagementScreenState extends State<ScheduleManagementScreen> {
   Future<void> _loadMySlots() async {
     final user = Provider.of<AuthProvider>(context, listen: false).user!;
     try {
-      final querySnapshot = await FirebaseFirestore.instance
-          .collection('schedules')
-          .where('teacherId', isEqualTo: user.id)
-          .orderBy('dateTime')
-          .get();
+      final querySnapshot =
+          await FirebaseFirestore.instance
+              .collection('schedules')
+              .where('teacherId', isEqualTo: user.id)
+              .orderBy('dateTime')
+              .get();
 
       setState(() {
-        _mySlots = querySnapshot.docs
-            .map((doc) => ScheduleSlot.fromMap(doc.data()))
-            .toList();
+        _mySlots =
+            querySnapshot.docs
+                .map((doc) => ScheduleSlot.fromMap(doc.data()))
+                .toList();
       });
     } catch (e) {
       print('Error loading slots: $e');
@@ -1880,7 +2253,9 @@ class _ScheduleManagementScreenState extends State<ScheduleManagementScreen> {
             // Add New Slot Form
             Card(
               elevation: 4,
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(12),
+              ),
               child: Padding(
                 padding: EdgeInsets.all(20),
                 child: Form(
@@ -1896,78 +2271,117 @@ class _ScheduleManagementScreenState extends State<ScheduleManagementScreen> {
                         ),
                       ),
                       SizedBox(height: 16),
-                      
+
                       // Language Selection
                       DropdownButtonFormField<String>(
-                        value: _selectedLanguage.isEmpty ? null : _selectedLanguage,
+                        value:
+                            _selectedLanguage.isEmpty
+                                ? null
+                                : _selectedLanguage,
                         decoration: InputDecoration(
                           labelText: 'Language',
-                          border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(8),
+                          ),
                         ),
-                        items: user.languages
-                            .map((lang) => DropdownMenuItem(value: lang, child: Text(lang)))
-                            .toList(),
-                        onChanged: (value) => setState(() => _selectedLanguage = value!),
-                        validator: (value) => value?.isEmpty ?? true ? 'Please select a language' : null,
+                        items:
+                            user.languages
+                                .map(
+                                  (lang) => DropdownMenuItem(
+                                    value: lang,
+                                    child: Text(lang),
+                                  ),
+                                )
+                                .toList(),
+                        onChanged:
+                            (value) =>
+                                setState(() => _selectedLanguage = value!),
+                        validator:
+                            (value) =>
+                                value?.isEmpty ?? true
+                                    ? 'Please select a language'
+                                    : null,
                       ),
                       SizedBox(height: 16),
-                      
+
                       // Date Selection
                       InkWell(
                         onTap: _selectDate,
                         child: InputDecorator(
                           decoration: InputDecoration(
                             labelText: 'Date',
-                            border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
+                            border: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(8),
+                            ),
                           ),
-                          child: Text('${_selectedDate.day}/${_selectedDate.month}/${_selectedDate.year}'),
+                          child: Text(
+                            '${_selectedDate.day}/${_selectedDate.month}/${_selectedDate.year}',
+                          ),
                         ),
                       ),
                       SizedBox(height: 16),
-                      
+
                       // Time Selection
                       InkWell(
                         onTap: _selectTime,
                         child: InputDecorator(
                           decoration: InputDecoration(
                             labelText: 'Time',
-                            border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
+                            border: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(8),
+                            ),
                           ),
-                          child: Text('${_selectedTime.hour}:${_selectedTime.minute.toString().padLeft(2, '0')}'),
+                          child: Text(
+                            '${_selectedTime.hour}:${_selectedTime.minute.toString().padLeft(2, '0')}',
+                          ),
                         ),
                       ),
                       SizedBox(height: 16),
-                      
+
                       // Duration Selection
                       DropdownButtonFormField<int>(
                         value: _duration,
                         decoration: InputDecoration(
                           labelText: 'Duration (minutes)',
-                          border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(8),
+                          ),
                         ),
-                        items: [30, 45, 60, 90, 120]
-                            .map((duration) => DropdownMenuItem(
-                                  value: duration,
-                                  child: Text('$duration minutes'),
-                                ))
-                            .toList(),
-                        onChanged: (value) => setState(() => _duration = value!),
+                        items:
+                            [30, 45, 60, 90, 120]
+                                .map(
+                                  (duration) => DropdownMenuItem(
+                                    value: duration,
+                                    child: Text('$duration minutes'),
+                                  ),
+                                )
+                                .toList(),
+                        onChanged:
+                            (value) => setState(() => _duration = value!),
                       ),
                       SizedBox(height: 16),
-                      
+
                       // Price Input
                       TextFormField(
                         initialValue: _price.toString(),
                         decoration: InputDecoration(
                           labelText: 'Price (\$)',
-                          border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(8),
+                          ),
                         ),
                         keyboardType: TextInputType.number,
-                        onChanged: (value) => _price = double.tryParse(value) ?? _price,
-                        validator: (value) => double.tryParse(value ?? '') == null ? 'Please enter a valid price' : null,
+                        onChanged:
+                            (value) =>
+                                _price = double.tryParse(value) ?? _price,
+                        validator:
+                            (value) =>
+                                double.tryParse(value ?? '') == null
+                                    ? 'Please enter a valid price'
+                                    : null,
                       ),
                       SizedBox(height: 20),
-                      
+
                       SizedBox(
                         width: double.infinity,
                         child: ElevatedButton(
@@ -1975,9 +2389,14 @@ class _ScheduleManagementScreenState extends State<ScheduleManagementScreen> {
                           style: ElevatedButton.styleFrom(
                             backgroundColor: Colors.blue.shade600,
                             padding: EdgeInsets.symmetric(vertical: 16),
-                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(8),
+                            ),
                           ),
-                          child: Text('Add Time Slot', style: TextStyle(fontSize: 16, color: Colors.white)),
+                          child: Text(
+                            'Add Time Slot',
+                            style: TextStyle(fontSize: 16, color: Colors.white),
+                          ),
                         ),
                       ),
                     ],
@@ -1985,19 +2404,16 @@ class _ScheduleManagementScreenState extends State<ScheduleManagementScreen> {
                 ),
               ),
             ),
-            
+
             SizedBox(height: 24),
-            
+
             // My Slots List
             Text(
               'My Available Slots',
-              style: TextStyle(
-                fontSize: 20,
-                fontWeight: FontWeight.bold,
-              ),
+              style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
             ),
             SizedBox(height: 16),
-            
+
             if (_mySlots.isEmpty)
               Card(
                 child: Padding(
@@ -2011,31 +2427,41 @@ class _ScheduleManagementScreenState extends State<ScheduleManagementScreen> {
                 ),
               )
             else
-              ..._mySlots.map((slot) => Card(
-                    margin: EdgeInsets.only(bottom: 8),
-                    child: ListTile(
-                      leading: CircleAvatar(
-                        backgroundColor: slot.isBooked ? Colors.red.shade100 : Colors.green.shade100,
-                        child: Icon(
-                          slot.isBooked ? Icons.event_busy : Icons.event_available,
-                          color: slot.isBooked ? Colors.red : Colors.green,
-                        ),
+              ..._mySlots.map(
+                (slot) => Card(
+                  margin: EdgeInsets.only(bottom: 8),
+                  child: ListTile(
+                    leading: CircleAvatar(
+                      backgroundColor:
+                          slot.isBooked
+                              ? Colors.red.shade100
+                              : Colors.green.shade100,
+                      child: Icon(
+                        slot.isBooked
+                            ? Icons.event_busy
+                            : Icons.event_available,
+                        color: slot.isBooked ? Colors.red : Colors.green,
                       ),
-                      title: Text('${slot.language} - ${slot.dateTime.day}/${slot.dateTime.month}/${slot.dateTime.year}'),
-                      subtitle: Text(
-                        '${slot.dateTime.hour}:${slot.dateTime.minute.toString().padLeft(2, '0')} - ${slot.duration} min - \$${slot.price.toStringAsFixed(2)}',
-                      ),
-                      trailing: slot.isBooked
-                          ? Chip(
+                    ),
+                    title: Text(
+                      '${slot.language} - ${slot.dateTime.day}/${slot.dateTime.month}/${slot.dateTime.year}',
+                    ),
+                    subtitle: Text(
+                      '${slot.dateTime.hour}:${slot.dateTime.minute.toString().padLeft(2, '0')} - ${slot.duration} min - \$${slot.price.toStringAsFixed(2)}',
+                    ),
+                    trailing:
+                        slot.isBooked
+                            ? Chip(
                               label: Text('Booked'),
                               backgroundColor: Colors.red.shade100,
                             )
-                          : IconButton(
+                            : IconButton(
                               icon: Icon(Icons.delete, color: Colors.red),
                               onPressed: () => _deleteSlot(slot.id),
                             ),
-                    ),
-                  )),
+                  ),
+                ),
+              ),
           ],
         ),
       ),
@@ -2088,32 +2514,37 @@ class _ScheduleManagementScreenState extends State<ScheduleManagementScreen> {
     );
 
     try {
-      final docRef = await FirebaseFirestore.instance.collection('schedules').add(slot.toMap());
+      final docRef = await FirebaseFirestore.instance
+          .collection('schedules')
+          .add(slot.toMap());
       await docRef.update({'id': docRef.id});
-      
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Time slot added successfully!')),
-      );
-      
+
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('Time slot added successfully!')));
+
       _loadMySlots();
     } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Error adding slot: $e')),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('Error adding slot: $e')));
     }
   }
 
   Future<void> _deleteSlot(String slotId) async {
     try {
-      await FirebaseFirestore.instance.collection('schedules').doc(slotId).delete();
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Slot deleted successfully!')),
-      );
+      await FirebaseFirestore.instance
+          .collection('schedules')
+          .doc(slotId)
+          .delete();
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('Slot deleted successfully!')));
       _loadMySlots();
     } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Error deleting slot: $e')),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('Error deleting slot: $e')));
     }
   }
 }
@@ -2132,7 +2563,7 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _loadNotifications();
     });
-    
+
     _timer = Timer.periodic(Duration(seconds: 30), (timer) {
       if (mounted) {
         _loadNotifications();
@@ -2155,7 +2586,7 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
         print('User is null, cannot load notifications');
         return;
       }
-      
+
       final appState = Provider.of<AppState>(context, listen: false);
       await appState.loadTeacherNotifications(authProvider.user!.id);
     } catch (e) {
@@ -2179,10 +2610,7 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
         backgroundColor: Colors.blue.shade600,
         foregroundColor: Colors.white,
         actions: [
-          IconButton(
-            icon: Icon(Icons.refresh),
-            onPressed: _loadNotifications,
-          ),
+          IconButton(icon: Icon(Icons.refresh), onPressed: _loadNotifications),
         ],
       ),
       body: Consumer<AppState>(
@@ -2231,8 +2659,11 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
   Future<void> _acceptBooking(NotificationModel notification) async {
     try {
       final appState = Provider.of<AppState>(context, listen: false);
-      final success = await appState.acceptBooking(notification.scheduleId, notification.id);
-      
+      final success = await appState.acceptBooking(
+        notification.scheduleId,
+        notification.id,
+      );
+
       if (mounted) {
         if (success) {
           ScaffoldMessenger.of(context).showSnackBar(
@@ -2269,10 +2700,7 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
       print('Error accepting booking: $e');
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Error: $e'),
-            backgroundColor: Colors.red,
-          ),
+          SnackBar(content: Text('Error: $e'), backgroundColor: Colors.red),
         );
       }
     }
@@ -2291,90 +2719,109 @@ class ProfileScreen extends StatelessWidget {
         backgroundColor: Colors.blue[600],
         foregroundColor: Colors.white,
       ),
-      body: user == null
-          ? Center(child: CircularProgressIndicator())
-          : Padding(
-              padding: EdgeInsets.all(16),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Card(
-                    child: Padding(
-                      padding: EdgeInsets.all(16),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Row(
-                            children: [
-                              CircleAvatar(
-                                radius: 30,
-                                backgroundColor: Colors.blue[100],
-                                child: Icon(Icons.person, size: 30, color: Colors.blue[600]),
-                              ),
-                              SizedBox(width: 16),
-                              Expanded(
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Text(
-                                      user.name,
-                                      style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-                                    ),
-                                    Text(
-                                      user.email,
-                                      style: TextStyle(color: Colors.grey[600]),
-                                    ),
-                                    Text(
-                                      user.role == 'teacher' ? 'Teacher' : 'Student',
-                                      style: TextStyle(
-                                        color: user.role == 'teacher' ? Colors.green : Colors.blue,
-                                        fontWeight: FontWeight.w500,
-                                      ),
-                                    ),
-                                  ],
+      body:
+          user == null
+              ? Center(child: CircularProgressIndicator())
+              : Padding(
+                padding: EdgeInsets.all(16),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Card(
+                      child: Padding(
+                        padding: EdgeInsets.all(16),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Row(
+                              children: [
+                                CircleAvatar(
+                                  radius: 30,
+                                  backgroundColor: Colors.blue[100],
+                                  child: Icon(
+                                    Icons.person,
+                                    size: 30,
+                                    color: Colors.blue[600],
+                                  ),
                                 ),
-                              ),
-                            ],
-                          ),
-                        ],
+                                SizedBox(width: 16),
+                                Expanded(
+                                  child: Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: [
+                                      Text(
+                                        user.name,
+                                        style: TextStyle(
+                                          fontSize: 20,
+                                          fontWeight: FontWeight.bold,
+                                        ),
+                                      ),
+                                      Text(
+                                        user.email,
+                                        style: TextStyle(
+                                          color: Colors.grey[600],
+                                        ),
+                                      ),
+                                      Text(
+                                        user.role == 'teacher'
+                                            ? 'Teacher'
+                                            : 'Student',
+                                        style: TextStyle(
+                                          color:
+                                              user.role == 'teacher'
+                                                  ? Colors.green
+                                                  : Colors.blue,
+                                          fontWeight: FontWeight.w500,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ],
+                        ),
                       ),
                     ),
-                  ),
-                  SizedBox(height: 20),
-                  if (user.role == 'teacher') ...[
+                    SizedBox(height: 20),
+                    if (user.role == 'teacher') ...[
+                      Card(
+                        child: ListTile(
+                          leading: Icon(
+                            Icons.language,
+                            color: Colors.blue[600],
+                          ),
+                          title: Text('Languages'),
+                          subtitle: Text(user.languages.join(', ')),
+                        ),
+                      ),
+                      SizedBox(height: 8),
+                    ],
                     Card(
                       child: ListTile(
-                        leading: Icon(Icons.language, color: Colors.blue[600]),
-                        title: Text('Languages'),
-                        subtitle: Text(user.languages.join(', ')),
+                        leading: Icon(Icons.settings, color: Colors.grey[600]),
+                        title: Text('Settings'),
+                        trailing: Icon(Icons.arrow_forward_ios),
+                        onTap: () {
+                          // Navigate to settings
+                        },
                       ),
                     ),
                     SizedBox(height: 8),
+                    Card(
+                      child: ListTile(
+                        leading: Icon(Icons.logout, color: Colors.red),
+                        title: Text('Logout'),
+                        onTap: () async {
+                          await authProvider.signOut();
+                          //Navigator.of(context).pushReplacementNamed('/login');
+                        },
+                      ),
+                    ),
                   ],
-                  Card(
-                    child: ListTile(
-                      leading: Icon(Icons.settings, color: Colors.grey[600]),
-                      title: Text('Settings'),
-                      trailing: Icon(Icons.arrow_forward_ios),
-                      onTap: () {
-                        // Navigate to settings
-                      },
-                    ),
-                  ),
-                  SizedBox(height: 8),
-                  Card(
-                    child: ListTile(
-                      leading: Icon(Icons.logout, color: Colors.red),
-                      title: Text('Logout'),
-                      onTap: () async {
-                        await authProvider.signOut();
-                        //Navigator.of(context).pushReplacementNamed('/login');
-                      },
-                    ),
-                  ),
-                ],
+                ),
               ),
-            ),
     );
   }
 }
@@ -2401,11 +2848,7 @@ class NotificationCard extends StatelessWidget {
           children: [
             Row(
               children: [
-                Icon(
-                  Icons.notifications,
-                  color: Colors.blue[600],
-                  size: 20,
-                ),
+                Icon(Icons.notifications, color: Colors.blue[600], size: 20),
                 SizedBox(width: 8),
                 Text(
                   'New Booking Request',
@@ -2417,31 +2860,25 @@ class NotificationCard extends StatelessWidget {
                 Spacer(),
                 Text(
                   _formatTime(notification.createdAt),
-                  style: TextStyle(
-                    color: Colors.grey[600],
-                    fontSize: 12,
-                  ),
+                  style: TextStyle(color: Colors.grey[600], fontSize: 12),
                 ),
               ],
             ),
             SizedBox(height: 8),
-            Text(
-              notification.message,
-              style: TextStyle(fontSize: 14),
-            ),
+            Text(notification.message, style: TextStyle(fontSize: 14)),
             SizedBox(height: 12),
             Row(
               mainAxisAlignment: MainAxisAlignment.end,
               children: [
-                TextButton(
-                  onPressed: () {
-                    // Decline functionality can be added here
-                  },
-                  child: Text(
-                    'Decline',
-                    style: TextStyle(color: Colors.grey[600]),
-                  ),
-                ),
+                // TextButton(
+                //   onPressed: () {
+                //     // Decline functionality can be added here
+                //   },
+                //   child: Text(
+                //     'Decline',
+                //     style: TextStyle(color: Colors.grey[600]),
+                //   ),
+                // ),
                 SizedBox(width: 8),
                 ElevatedButton(
                   onPressed: onAccept,
@@ -2462,7 +2899,7 @@ class NotificationCard extends StatelessWidget {
   String _formatTime(DateTime dateTime) {
     final now = DateTime.now();
     final difference = now.difference(dateTime);
-    
+
     if (difference.inMinutes < 1) {
       return 'Just now';
     } else if (difference.inHours < 1) {
@@ -2493,38 +2930,40 @@ class _StudentMyCoursesScreenState extends State<StudentMyCoursesScreen> {
   Future<void> _loadAcceptedCourses() async {
     final user = Provider.of<AuthProvider>(context, listen: false).user!;
     print('[v0] Loading courses for student ID: ${user.id}');
-    
+
     try {
-      final querySnapshot = await FirebaseFirestore.instance
-          .collection('student_bookings')
-          .where('studentId', isEqualTo: user.id)
-          .where('status', isEqualTo: 'accepted')
-          .get(); // Removed orderBy to avoid index issues
+      final querySnapshot =
+          await FirebaseFirestore.instance
+              .collection('student_bookings')
+              .where('studentId', isEqualTo: user.id)
+              .where('status', isEqualTo: 'accepted')
+              .get(); // Removed orderBy to avoid index issues
 
       print('[v0] Found ${querySnapshot.docs.length} accepted courses');
-      
+
       setState(() {
-        _acceptedCourses = querySnapshot.docs
-          .map((doc) {
-            final data = doc.data() as Map<String, dynamic>;
-            print('[v0] Course data: ${data}');
-            
-            return ScheduleSlot(
-              id: doc.id,
-              teacherId: data['teacherId'],
-              teacherName: data['teacherName'],
-              courseName: data['courseName'] ?? 'Course', // Added fallback
-              language: data['language'] ?? 'Language', // Added fallback
-              dateTime: data['dateTime'] != null 
-                  ? (data['dateTime'] as Timestamp).toDate()
-                  : DateTime.now(), // Added null check
-              duration: data['duration'] ?? 60,
-              price: data['price'] ?? 0.0,
-              status: data['status'],
-              studentId: data['studentId'],
-              studentName: data['studentName'],
-            );
-          }).toList();
+        _acceptedCourses =
+            querySnapshot.docs.map((doc) {
+              final data = doc.data() as Map<String, dynamic>;
+              print('[v0] Course data: ${data}');
+
+              return ScheduleSlot(
+                id: doc.id,
+                teacherId: data['teacherId'],
+                teacherName: data['teacherName'],
+                courseName: data['courseName'] ?? 'Course', // Added fallback
+                language: data['language'] ?? 'Language', // Added fallback
+                dateTime:
+                    data['dateTime'] != null
+                        ? (data['dateTime'] as Timestamp).toDate()
+                        : DateTime.now(), // Added null check
+                duration: data['duration'] ?? 60,
+                price: data['price'] ?? 0.0,
+                status: data['status'],
+                studentId: data['studentId'],
+                studentName: data['studentName'],
+              );
+            }).toList();
 
         _isLoading = false;
       });
@@ -2544,242 +2983,272 @@ class _StudentMyCoursesScreenState extends State<StudentMyCoursesScreen> {
         backgroundColor: Colors.green[600],
         foregroundColor: Colors.white,
       ),
-      body: _isLoading
-          ? Center(child: CircularProgressIndicator())
-          : _acceptedCourses.isEmpty
+      body:
+          _isLoading
+              ? Center(child: CircularProgressIndicator())
+              : _acceptedCourses.isEmpty
               ? Center(
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Icon(Icons.school_outlined, size: 64, color: Colors.grey),
-                      SizedBox(height: 16),
-                      Text(
-                        'No accepted courses yet',
-                        style: TextStyle(fontSize: 18, color: Colors.grey[600]),
-                      ),
-                      SizedBox(height: 8),
-                      Text(
-                        'Your accepted courses will appear here',
-                        style: TextStyle(fontSize: 14, color: Colors.grey[500]),
-                      ),
-                    ],
-                  ),
-                )
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Icon(Icons.school_outlined, size: 64, color: Colors.grey),
+                    SizedBox(height: 16),
+                    Text(
+                      'No accepted courses yet',
+                      style: TextStyle(fontSize: 18, color: Colors.grey[600]),
+                    ),
+                    SizedBox(height: 8),
+                    Text(
+                      'Your accepted courses will appear here',
+                      style: TextStyle(fontSize: 14, color: Colors.grey[500]),
+                    ),
+                  ],
+                ),
+              )
               : RefreshIndicator(
-                  onRefresh: _loadAcceptedCourses,
-                  child: ListView.builder(
-                    padding: EdgeInsets.all(16),
-                    itemCount: _acceptedCourses.length,
-                    itemBuilder: (context, index) {
-                      final course = _acceptedCourses[index];
-                      final now = DateTime.now();
-                      final courseDate = DateTime(
-                        course.dateTime.year,
-                        course.dateTime.month,
-                        course.dateTime.day,
-                      );
-                      final today = DateTime(now.year, now.month, now.day);
-                      
-                      String statusText;
-                      Color statusColor;
-                      
-                      if (courseDate.isAtSameMomentAs(today)) {
-                        statusText = 'Ongoing';
-                        statusColor = Colors.green;
-                      } else if (courseDate.isAfter(today)) {
-                        statusText = 'Upcoming';
-                        statusColor = Colors.blue;
-                      } else {
-                        statusText = 'Completed';
-                        statusColor = Colors.grey;
-                      }
+                onRefresh: _loadAcceptedCourses,
+                child: ListView.builder(
+                  padding: EdgeInsets.all(16),
+                  itemCount: _acceptedCourses.length,
+                  itemBuilder: (context, index) {
+                    final course = _acceptedCourses[index];
+                    final now = DateTime.now();
+                    final courseDate = DateTime(
+                      course.dateTime.year,
+                      course.dateTime.month,
+                      course.dateTime.day,
+                    );
+                    final today = DateTime(now.year, now.month, now.day);
 
-                      return Card(
-                        margin: EdgeInsets.only(bottom: 16),
-                        elevation: 4,
-                        shape: RoundedRectangleBorder(
+                    String statusText;
+                    Color statusColor;
+
+                    if (courseDate.isAtSameMomentAs(today)) {
+                      statusText = 'Ongoing';
+                      statusColor = Colors.green;
+                    } else if (courseDate.isAfter(today)) {
+                      statusText = 'Upcoming';
+                      statusColor = Colors.blue;
+                    } else {
+                      statusText = 'Completed';
+                      statusColor = Colors.grey;
+                    }
+
+                    return Card(
+                      margin: EdgeInsets.only(bottom: 16),
+                      elevation: 4,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: Container(
+                        decoration: BoxDecoration(
                           borderRadius: BorderRadius.circular(12),
-                        ),
-                        child: Container(
-                          decoration: BoxDecoration(
-                            borderRadius: BorderRadius.circular(12),
-                            gradient: LinearGradient(
-                              colors: [Colors.green[50]!, Colors.white],
-                              begin: Alignment.topLeft,
-                              end: Alignment.bottomRight,
-                            ),
+                          gradient: LinearGradient(
+                            colors: [Colors.green[50]!, Colors.white],
+                            begin: Alignment.topLeft,
+                            end: Alignment.bottomRight,
                           ),
-                          child: Padding(
-                            padding: EdgeInsets.all(16),
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Row(
-                                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                  children: [
-                                    Expanded(
-                                      child: Text(
-                                        '${course.language} Course',
-                                        style: TextStyle(
-                                          fontSize: 20,
-                                          fontWeight: FontWeight.bold,
-                                          color: Colors.green[800],
-                                        ),
-                                      ),
-                                    ),
-                                    Container(
-                                      padding: EdgeInsets.symmetric(
-                                        horizontal: 12,
-                                        vertical: 6,
-                                      ),
-                                      decoration: BoxDecoration(
-                                        color: statusColor,
-                                        borderRadius: BorderRadius.circular(20),
-                                      ),
-                                      child: Text(
-                                        statusText,
-                                        style: TextStyle(
-                                          color: Colors.white,
-                                          fontWeight: FontWeight.bold,
-                                          fontSize: 12,
-                                        ),
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                                SizedBox(height: 12),
-                                Container(
-                                  padding: EdgeInsets.all(12),
-                                  decoration: BoxDecoration(
-                                    color: Colors.green[100],
-                                    borderRadius: BorderRadius.circular(8),
-                                  ),
-                                  child: Row(
-                                    children: [
-                                      Icon(Icons.check_circle, color: Colors.green[700], size: 24),
-                                      SizedBox(width: 8),
-                                      Text(
-                                        'ACCEPTED',
-                                        style: TextStyle(
-                                          fontSize: 16,
-                                          fontWeight: FontWeight.bold,
-                                          color: Colors.green[700],
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                                SizedBox(height: 16),
-                                Row(
-                                  children: [
-                                    Icon(Icons.person, color: Colors.grey[600], size: 20),
-                                    SizedBox(width: 8),
-                                    Text(
-                                      'Teacher: ${course.teacherName}',
+                        ),
+                        child: Padding(
+                          padding: EdgeInsets.all(16),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Row(
+                                mainAxisAlignment:
+                                    MainAxisAlignment.spaceBetween,
+                                children: [
+                                  Expanded(
+                                    child: Text(
+                                      '${course.language} Course',
                                       style: TextStyle(
-                                        fontSize: 16,
-                                        color: Colors.grey[700],
+                                        fontSize: 20,
+                                        fontWeight: FontWeight.bold,
+                                        color: Colors.green[800],
                                       ),
                                     ),
-                                  ],
-                                ),
-                                SizedBox(height: 8),
-                                Row(
-                                  children: [
-                                    Icon(Icons.schedule, color: Colors.grey[600], size: 20),
-                                    SizedBox(width: 8),
-                                    Text(
-                                      'Date: ${DateFormat('MMM dd, yyyy - hh:mm a').format(course.dateTime)}',
-                                      style: TextStyle(
-                                        fontSize: 14,
-                                        color: Colors.grey[700],
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                                SizedBox(height: 8),
-                                Row(
-                                  children: [
-                                    Icon(Icons.access_time, color: Colors.grey[600], size: 20),
-                                    SizedBox(width: 8),
-                                    Text(
-                                      'Duration: ${course.duration} minutes',
-                                      style: TextStyle(
-                                        fontSize: 14,
-                                        color: Colors.grey[700],
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                                SizedBox(height: 16),
-                                Text(
-                                  'Course Modules:',
-                                  style: TextStyle(
-                                    fontSize: 16,
-                                    fontWeight: FontWeight.bold,
-                                    color: Colors.green[700],
                                   ),
-                                ),
-                                SizedBox(height: 8),
-                                Column(
-                                  children: [
-                                    'Module 1: Learn Grammar',
-                                    'Module 2: Vocabulary Building',
-                                    'Module 3: Conversation Practice',
-                                    'Module 4: Reading Comprehension',
-                                    'Module 5: Writing Skills'
-                                  ].map((module) => Padding(
-                                    padding: EdgeInsets.symmetric(vertical: 4),
-                                    child: Row(
-                                      children: [
-                                        Icon(Icons.check_circle, 
-                                             color: Colors.green, size: 16),
-                                        SizedBox(width: 8),
-                                        Text(
-                                          module,
-                                          style: TextStyle(
-                                            fontSize: 14,
-                                            color: Colors.grey[700],
-                                          ),
-                                        ),
-                                      ],
+                                  Container(
+                                    padding: EdgeInsets.symmetric(
+                                      horizontal: 12,
+                                      vertical: 6,
                                     ),
-                                  )).toList(),
-                                ),
-                                if (statusText == 'Today') ...[ 
-                                  SizedBox(height: 16),
-                                  SizedBox(
-                                    width: double.infinity,
-                                    child: ElevatedButton(
-                                      onPressed: () {
-                                        // Navigate to class room or start class
-                                      },
-                                      style: ElevatedButton.styleFrom(
-                                        backgroundColor: Colors.green,
-                                        foregroundColor: Colors.white,
-                                        padding: EdgeInsets.symmetric(vertical: 12),
-                                        shape: RoundedRectangleBorder(
-                                          borderRadius: BorderRadius.circular(8),
-                                        ),
-                                      ),
-                                      child: Text(
-                                        'Join Class Now',
-                                        style: TextStyle(
-                                          fontSize: 16,
-                                          fontWeight: FontWeight.bold,
-                                        ),
+                                    decoration: BoxDecoration(
+                                      color: statusColor,
+                                      borderRadius: BorderRadius.circular(20),
+                                    ),
+                                    child: Text(
+                                      statusText,
+                                      style: TextStyle(
+                                        color: Colors.white,
+                                        fontWeight: FontWeight.bold,
+                                        fontSize: 12,
                                       ),
                                     ),
                                   ),
                                 ],
+                              ),
+                              SizedBox(height: 12),
+                              Container(
+                                padding: EdgeInsets.all(12),
+                                decoration: BoxDecoration(
+                                  color: Colors.green[100],
+                                  borderRadius: BorderRadius.circular(8),
+                                ),
+                                child: Row(
+                                  children: [
+                                    Icon(
+                                      Icons.check_circle,
+                                      color: Colors.green[700],
+                                      size: 24,
+                                    ),
+                                    SizedBox(width: 8),
+                                    Text(
+                                      'ACCEPTED',
+                                      style: TextStyle(
+                                        fontSize: 16,
+                                        fontWeight: FontWeight.bold,
+                                        color: Colors.green[700],
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                              SizedBox(height: 16),
+                              Row(
+                                children: [
+                                  Icon(
+                                    Icons.person,
+                                    color: Colors.grey[600],
+                                    size: 20,
+                                  ),
+                                  SizedBox(width: 8),
+                                  Text(
+                                    'Teacher: ${course.teacherName}',
+                                    style: TextStyle(
+                                      fontSize: 16,
+                                      color: Colors.grey[700],
+                                    ),
+                                  ),
+                                ],
+                              ),
+                              SizedBox(height: 8),
+                              Row(
+                                children: [
+                                  Icon(
+                                    Icons.schedule,
+                                    color: Colors.grey[600],
+                                    size: 20,
+                                  ),
+                                  SizedBox(width: 8),
+                                  Text(
+                                    'Date: ${DateFormat('MMM dd, yyyy - hh:mm a').format(course.dateTime)}',
+                                    style: TextStyle(
+                                      fontSize: 14,
+                                      color: Colors.grey[700],
+                                    ),
+                                  ),
+                                ],
+                              ),
+                              SizedBox(height: 8),
+                              Row(
+                                children: [
+                                  Icon(
+                                    Icons.access_time,
+                                    color: Colors.grey[600],
+                                    size: 20,
+                                  ),
+                                  SizedBox(width: 8),
+                                  Text(
+                                    'Duration: ${course.duration} minutes',
+                                    style: TextStyle(
+                                      fontSize: 14,
+                                      color: Colors.grey[700],
+                                    ),
+                                  ),
+                                ],
+                              ),
+                              SizedBox(height: 16),
+                              Text(
+                                'Course Modules:',
+                                style: TextStyle(
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.bold,
+                                  color: Colors.green[700],
+                                ),
+                              ),
+                              SizedBox(height: 8),
+                              Column(
+                                children:
+                                    [
+                                          'Module 1: Learn Grammar',
+                                          'Module 2: Vocabulary Building',
+                                          'Module 3: Conversation Practice',
+                                          'Module 4: Reading Comprehension',
+                                          'Module 5: Writing Skills',
+                                        ]
+                                        .map(
+                                          (module) => Padding(
+                                            padding: EdgeInsets.symmetric(
+                                              vertical: 4,
+                                            ),
+                                            child: Row(
+                                              children: [
+                                                Icon(
+                                                  Icons.check_circle,
+                                                  color: Colors.green,
+                                                  size: 16,
+                                                ),
+                                                SizedBox(width: 8),
+                                                Text(
+                                                  module,
+                                                  style: TextStyle(
+                                                    fontSize: 14,
+                                                    color: Colors.grey[700],
+                                                  ),
+                                                ),
+                                              ],
+                                            ),
+                                          ),
+                                        )
+                                        .toList(),
+                              ),
+                              if (statusText == 'Today') ...[
+                                SizedBox(height: 16),
+                                SizedBox(
+                                  width: double.infinity,
+                                  child: ElevatedButton(
+                                    onPressed: () {
+                                      // Navigate to class room or start class
+                                    },
+                                    style: ElevatedButton.styleFrom(
+                                      backgroundColor: Colors.green,
+                                      foregroundColor: Colors.white,
+                                      padding: EdgeInsets.symmetric(
+                                        vertical: 12,
+                                      ),
+                                      shape: RoundedRectangleBorder(
+                                        borderRadius: BorderRadius.circular(8),
+                                      ),
+                                    ),
+                                    child: Text(
+                                      'Join Class Now',
+                                      style: TextStyle(
+                                        fontSize: 16,
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                    ),
+                                  ),
+                                ),
                               ],
-                            ),
+                            ],
                           ),
                         ),
-                      );
-                    },
-                  ),
+                      ),
+                    );
+                  },
                 ),
+              ),
     );
   }
 }
@@ -2821,18 +3290,12 @@ class _TeacherChatListScreenState extends State<TeacherChatListScreen> {
                   SizedBox(height: 16),
                   Text(
                     'No messages yet',
-                    style: TextStyle(
-                      fontSize: 18,
-                      color: Colors.grey.shade600,
-                    ),
+                    style: TextStyle(fontSize: 18, color: Colors.grey.shade600),
                   ),
                   SizedBox(height: 8),
                   Text(
                     'Students will appear here when they send you messages',
-                    style: TextStyle(
-                      fontSize: 14,
-                      color: Colors.grey.shade500,
-                    ),
+                    style: TextStyle(fontSize: 14, color: Colors.grey.shade500),
                     textAlign: TextAlign.center,
                   ),
                 ],
@@ -2846,20 +3309,24 @@ class _TeacherChatListScreenState extends State<TeacherChatListScreen> {
             itemBuilder: (context, index) {
               final chatRoom = snapshot.data!.docs[index];
               final chatRoomData = chatRoom.data() as Map<String, dynamic>;
-              
+
               // Get the other participant (student) ID
-              final participants = List<String>.from(chatRoomData['participants']);
+              final participants = List<String>.from(
+                chatRoomData['participants'],
+              );
               final studentId = participants.firstWhere(
                 (id) => id != currentUser?.uid,
                 orElse: () => '',
               );
-              
+
               final lastMessage = chatRoomData['lastMessage'] ?? '';
-              final lastMessageTime = chatRoomData['lastMessageTime'] as Timestamp?;
+              final lastMessageTime =
+                  chatRoomData['lastMessageTime'] as Timestamp?;
               final lastSenderId = chatRoomData['lastSenderId'] ?? '';
-              
+
               // Show if there's a new message from student
-              final hasNewMessage = lastSenderId == studentId && lastMessage.isNotEmpty;
+              final hasNewMessage =
+                  lastSenderId == studentId && lastMessage.isNotEmpty;
 
               return Card(
                 elevation: 2,
@@ -2875,14 +3342,21 @@ class _TeacherChatListScreenState extends State<TeacherChatListScreen> {
                         radius: 24,
                         backgroundColor: Colors.blue.shade600,
                         child: FutureBuilder<DocumentSnapshot>(
-                          future: FirebaseFirestore.instance
-                              .collection('users')
-                              .doc(studentId)
-                              .get(),
+                          future:
+                              FirebaseFirestore.instance
+                                  .collection('users')
+                                  .doc(studentId)
+                                  .get(),
                           builder: (context, userSnapshot) {
-                            if (userSnapshot.hasData && userSnapshot.data!.exists) {
-                              final userData = userSnapshot.data!.data() as Map<String, dynamic>;
-                              final studentName = userData['name'] ?? userData['email'] ?? 'Student';
+                            if (userSnapshot.hasData &&
+                                userSnapshot.data!.exists) {
+                              final userData =
+                                  userSnapshot.data!.data()
+                                      as Map<String, dynamic>;
+                              final studentName =
+                                  userData['name'] ??
+                                  userData['email'] ??
+                                  'Student';
                               return Text(
                                 studentName[0].toUpperCase(),
                                 style: TextStyle(
@@ -2919,18 +3393,26 @@ class _TeacherChatListScreenState extends State<TeacherChatListScreen> {
                     ],
                   ),
                   title: FutureBuilder<DocumentSnapshot>(
-                    future: FirebaseFirestore.instance
-                        .collection('users')
-                        .doc(studentId)
-                        .get(),
+                    future:
+                        FirebaseFirestore.instance
+                            .collection('users')
+                            .doc(studentId)
+                            .get(),
                     builder: (context, userSnapshot) {
                       if (userSnapshot.hasData && userSnapshot.data!.exists) {
-                        final userData = userSnapshot.data!.data() as Map<String, dynamic>;
-                        final studentName = userData['name'] ?? userData['email'] ?? 'Unknown Student';
+                        final userData =
+                            userSnapshot.data!.data() as Map<String, dynamic>;
+                        final studentName =
+                            userData['name'] ??
+                            userData['email'] ??
+                            'Unknown Student';
                         return Text(
                           studentName,
                           style: TextStyle(
-                            fontWeight: hasNewMessage ? FontWeight.bold : FontWeight.normal,
+                            fontWeight:
+                                hasNewMessage
+                                    ? FontWeight.bold
+                                    : FontWeight.normal,
                             fontSize: 16,
                           ),
                         );
@@ -2938,7 +3420,10 @@ class _TeacherChatListScreenState extends State<TeacherChatListScreen> {
                       return Text(
                         'S',
                         style: TextStyle(
-                          fontWeight: hasNewMessage ? FontWeight.bold : FontWeight.normal,
+                          fontWeight:
+                              hasNewMessage
+                                  ? FontWeight.bold
+                                  : FontWeight.normal,
                           fontSize: 16,
                         ),
                       );
@@ -2952,8 +3437,14 @@ class _TeacherChatListScreenState extends State<TeacherChatListScreen> {
                         Text(
                           lastMessage,
                           style: TextStyle(
-                            color: hasNewMessage ? Colors.black87 : Colors.grey.shade600,
-                            fontWeight: hasNewMessage ? FontWeight.w500 : FontWeight.normal,
+                            color:
+                                hasNewMessage
+                                    ? Colors.black87
+                                    : Colors.grey.shade600,
+                            fontWeight:
+                                hasNewMessage
+                                    ? FontWeight.w500
+                                    : FontWeight.normal,
                           ),
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
@@ -2971,48 +3462,59 @@ class _TeacherChatListScreenState extends State<TeacherChatListScreen> {
                       ],
                     ],
                   ),
-                  trailing: hasNewMessage
-                      ? Container(
-                          padding: EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                          decoration: BoxDecoration(
-                            color: Colors.red,
-                            borderRadius: BorderRadius.circular(12),
-                          ),
-                          child: Text(
-                            'New',
-                            style: TextStyle(
-                              color: Colors.white,
-                              fontSize: 12,
-                              fontWeight: FontWeight.bold,
+                  trailing:
+                      hasNewMessage
+                          ? Container(
+                            padding: EdgeInsets.symmetric(
+                              horizontal: 8,
+                              vertical: 4,
                             ),
+                            decoration: BoxDecoration(
+                              color: Colors.red,
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                            child: Text(
+                              'New',
+                              style: TextStyle(
+                                color: Colors.white,
+                                fontSize: 12,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          )
+                          : Icon(
+                            Icons.chevron_right,
+                            color: Colors.grey.shade400,
                           ),
-                        )
-                      : Icon(Icons.chevron_right, color: Colors.grey.shade400),
                   onTap: () async {
                     // Get student info and navigate to chat
-                    final userDoc = await FirebaseFirestore.instance
-                        .collection('users')
-                        .doc(studentId)
-                        .get();
-                    
+                    final userDoc =
+                        await FirebaseFirestore.instance
+                            .collection('users')
+                            .doc(studentId)
+                            .get();
+
                     String studentName = 'Unknown Student';
                     if (userDoc.exists) {
                       final userData = userDoc.data() as Map<String, dynamic>;
-                      studentName = userData['name'] ?? userData['email'] ?? 'Unknown Student';
+                      studentName =
+                          userData['name'] ??
+                          userData['email'] ??
+                          'Unknown Student';
                     }
 
                     Navigator.push(
                       context,
                       MaterialPageRoute(
-                        builder: (context) => TeacherChatScreen(
-                          studentId: studentId,
-                          studentName: studentName,
-                          //teacherId: currentUser!.uid,
-                          //teacherName: 'Teacher',
-                        ),
+                        builder:
+                            (context) => TeacherChatScreen(
+                              studentId: studentId,
+                              studentName: studentName,
+                              //teacherId: currentUser!.uid,
+                              //teacherName: 'Teacher',
+                            ),
                       ),
                     );
-                  
                   },
                 ),
               );
@@ -3065,7 +3567,9 @@ class ChatRoomModel {
     return ChatRoomModel(
       id: doc.id,
       participants: List<String>.from(data['participants'] ?? []),
-      participantNames: Map<String, String>.from(data['participantNames'] ?? {}),
+      participantNames: Map<String, String>.from(
+        data['participantNames'] ?? {},
+      ),
       lastMessage: data['lastMessage'] ?? '',
       lastMessageTime: (data['lastMessageTime'] as Timestamp?)?.toDate(),
       lastSenderId: data['lastSenderId'] ?? '',
@@ -3113,22 +3617,26 @@ class ChatService {
     participants.sort();
     String chatRoomId = participants.join('_');
 
-    DocumentReference chatRoomRef = _firestore.collection('chat_rooms').doc(chatRoomId);
+    DocumentReference chatRoomRef = _firestore
+        .collection('chat_rooms')
+        .doc(chatRoomId);
     DocumentSnapshot chatRoomSnapshot = await chatRoomRef.get();
 
     if (!chatRoomSnapshot.exists) {
       // Get actual user names
-      DocumentSnapshot teacherDoc = await _firestore.collection('users').doc(teacherId).get();
-      DocumentSnapshot studentDoc = await _firestore.collection('users').doc(studentId).get();
-      
+      DocumentSnapshot teacherDoc =
+          await _firestore.collection('users').doc(teacherId).get();
+      DocumentSnapshot studentDoc =
+          await _firestore.collection('users').doc(studentId).get();
+
       String teacherName = 'Teacher';
       String studentName = 'Student';
-      
+
       if (teacherDoc.exists) {
         final teacherData = teacherDoc.data() as Map<String, dynamic>;
         teacherName = teacherData['name'] ?? teacherData['email'] ?? 'Teacher';
       }
-      
+
       if (studentDoc.exists) {
         final studentData = studentDoc.data() as Map<String, dynamic>;
         studentName = studentData['name'] ?? studentData['email'] ?? 'Student';
@@ -3137,10 +3645,7 @@ class ChatService {
       await chatRoomRef.set({
         'id': chatRoomId,
         'participants': participants,
-        'participantNames': {
-          teacherId: teacherName,
-          studentId: studentName,
-        },
+        'participantNames': {teacherId: teacherName, studentId: studentName},
         'lastMessage': '',
         'lastMessageTime': Timestamp.now(),
         'lastSenderId': '',
@@ -3157,9 +3662,10 @@ class ChatService {
     if (currentUser == null) return;
 
     // Get sender name
-    DocumentSnapshot userDoc = await _firestore.collection('users').doc(currentUser.uid).get();
+    DocumentSnapshot userDoc =
+        await _firestore.collection('users').doc(currentUser.uid).get();
     String senderName = currentUser.email ?? 'Unknown';
-    
+
     if (userDoc.exists) {
       final userData = userDoc.data() as Map<String, dynamic>;
       senderName = userData['name'] ?? userData['email'] ?? 'Unknown';
@@ -3209,48 +3715,48 @@ class ChatService {
         .where('participants', arrayContains: currentUser.uid)
         .snapshots()
         .map((snapshot) {
-      // Sort the documents manually to handle null lastMessageTime
-      final docs = snapshot.docs.toList();
-      docs.sort((a, b) {
-        final aData = a.data() as Map<String, dynamic>;
-        final bData = b.data() as Map<String, dynamic>;
-        
-        final aTime = aData['lastMessageTime'] as Timestamp?;
-        final bTime = bData['lastMessageTime'] as Timestamp?;
-        
-        // If both have timestamps, compare them
-        if (aTime != null && bTime != null) {
-          return bTime.compareTo(aTime); // Descending order
-        }
-        
-        // If only one has timestamp, prioritize it
-        if (aTime != null && bTime == null) return -1;
-        if (aTime == null && bTime != null) return 1;
-        
-        // If both are null, maintain original order
-        return 0;
-      });
-      
-      // Create a new QuerySnapshot with sorted docs
-      return MockQuerySnapshot(docs);
-    });
+          // Sort the documents manually to handle null lastMessageTime
+          final docs = snapshot.docs.toList();
+          docs.sort((a, b) {
+            final aData = a.data() as Map<String, dynamic>;
+            final bData = b.data() as Map<String, dynamic>;
+
+            final aTime = aData['lastMessageTime'] as Timestamp?;
+            final bTime = bData['lastMessageTime'] as Timestamp?;
+
+            // If both have timestamps, compare them
+            if (aTime != null && bTime != null) {
+              return bTime.compareTo(aTime); // Descending order
+            }
+
+            // If only one has timestamp, prioritize it
+            if (aTime != null && bTime == null) return -1;
+            if (aTime == null && bTime != null) return 1;
+
+            // If both are null, maintain original order
+            return 0;
+          });
+
+          // Create a new QuerySnapshot with sorted docs
+          return MockQuerySnapshot(docs);
+        });
   }
 }
 
 class MockQuerySnapshot implements QuerySnapshot {
   final List<QueryDocumentSnapshot> _docs;
-  
+
   MockQuerySnapshot(this._docs);
-  
+
   @override
   List<QueryDocumentSnapshot> get docs => _docs;
-  
+
   @override
   List<DocumentChange> get docChanges => [];
-  
+
   @override
   SnapshotMetadata get metadata => MockSnapshotMetadata();
-  
+
   @override
   int get size => _docs.length;
 }
@@ -3258,7 +3764,7 @@ class MockQuerySnapshot implements QuerySnapshot {
 class MockSnapshotMetadata implements SnapshotMetadata {
   @override
   bool get hasPendingWrites => false;
-  
+
   @override
   bool get isFromCache => false;
 }
@@ -3305,9 +3811,12 @@ class _StudentChatScreenState extends State<StudentChatScreen> {
   void _sendMessage() async {
     if (_messageController.text.trim().isEmpty || _chatRoomId == null) return;
 
-    await _chatService.sendMessage(_chatRoomId!, _messageController.text.trim());
+    await _chatService.sendMessage(
+      _chatRoomId!,
+      _messageController.text.trim(),
+    );
     _messageController.clear();
-    
+
     // Scroll to bottom
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (_scrollController.hasClients) {
@@ -3327,189 +3836,212 @@ class _StudentChatScreenState extends State<StudentChatScreen> {
         title: Text('Chat with ${widget.teacherName}'),
         backgroundColor: Colors.blue.shade600,
         foregroundColor: Colors.white,
+        actions: [
+          IconButton(
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => VideoCallScreen()),
+              );
+            },
+            icon: Icon(Icons.video_call, size: 32),
+          ),
+          SizedBox(width: 12),
+        ],
       ),
-      body: _chatRoomId == null
-          ? Center(child: CircularProgressIndicator())
-          : Column(
-              children: [
-                Expanded(
-                  child: StreamBuilder<QuerySnapshot>(
-                    stream: _chatService.getMessages(_chatRoomId!),
-                    builder: (context, snapshot) {
-                      if (snapshot.connectionState == ConnectionState.waiting) {
-                        return Center(child: CircularProgressIndicator());
-                      }
 
-                      if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
-                        return Center(
-                          child: Column(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              Icon(
-                                Icons.chat_bubble_outline,
-                                size: 64,
-                                color: Colors.grey.shade400,
-                              ),
-                              SizedBox(height: 16),
-                              Text(
-                                'No chat yet',
-                                style: TextStyle(
-                                  fontSize: 18,
-                                  color: Colors.grey.shade600,
-                                ),
-                              ),
-                              SizedBox(height: 8),
-                              Text(
-                                'Start a conversation with ${widget.teacherName}',
-                                style: TextStyle(
-                                  fontSize: 14,
-                                  color: Colors.grey.shade500,
-                                ),
-                              ),
-                            ],
-                          ),
-                        );
-                      }
+      body:
+          _chatRoomId == null
+              ? Center(child: CircularProgressIndicator())
+              : Column(
+                children: [
+                  Expanded(
+                    child: StreamBuilder<QuerySnapshot>(
+                      stream: _chatService.getMessages(_chatRoomId!),
+                      builder: (context, snapshot) {
+                        if (snapshot.connectionState ==
+                            ConnectionState.waiting) {
+                          return Center(child: CircularProgressIndicator());
+                        }
 
-                      final messages = snapshot.data!.docs
-                          .map((doc) => MessageModel.fromFirestore(doc))
-                          .toList();
-
-                      return ListView.builder(
-                        controller: _scrollController,
-                        padding: EdgeInsets.all(16),
-                        itemCount: messages.length,
-                        itemBuilder: (context, index) {
-                          final message = messages[index];
-                          final isMe = message.senderId == currentUser?.uid;
-
-                          return Container(
-                            margin: EdgeInsets.only(bottom: 12),
-                            child: Row(
-                              mainAxisAlignment: isMe
-                                  ? MainAxisAlignment.end
-                                  : MainAxisAlignment.start,
+                        if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
+                          return Center(
+                            child: Column(
+                              mainAxisAlignment: MainAxisAlignment.center,
                               children: [
-                                if (!isMe) ...[
-                                  CircleAvatar(
-                                    radius: 16,
-                                    backgroundColor: Colors.blue.shade600,
-                                    child: Text(
-                                      widget.teacherName[0].toUpperCase(),
-                                      style: TextStyle(
-                                        color: Colors.white,
-                                        fontSize: 12,
-                                        fontWeight: FontWeight.bold,
-                                      ),
-                                    ),
-                                  ),
-                                  SizedBox(width: 8),
-                                ],
-                                Flexible(
-                                  child: Container(
-                                    padding: EdgeInsets.symmetric(
-                                      horizontal: 16,
-                                      vertical: 12,
-                                    ),
-                                    decoration: BoxDecoration(
-                                      color: isMe
-                                          ? Colors.blue.shade600
-                                          : Colors.grey.shade200,
-                                      borderRadius: BorderRadius.circular(20),
-                                    ),
-                                    child: Column(
-                                      crossAxisAlignment: CrossAxisAlignment.start,
-                                      children: [
-                                        Text(
-                                          message.message,
-                                          style: TextStyle(
-                                            color: isMe ? Colors.white : Colors.black87,
-                                            fontSize: 16,
-                                          ),
-                                        ),
-                                        SizedBox(height: 4),
-                                        Text(
-                                          _formatTime(message.timestamp),
-                                          style: TextStyle(
-                                            color: isMe
-                                                ? Colors.white70
-                                                : Colors.grey.shade600,
-                                            fontSize: 12,
-                                          ),
-                                        ),
-                                      ],
-                                    ),
+                                Icon(
+                                  Icons.chat_bubble_outline,
+                                  size: 64,
+                                  color: Colors.grey.shade400,
+                                ),
+                                SizedBox(height: 16),
+                                Text(
+                                  'No chat yet',
+                                  style: TextStyle(
+                                    fontSize: 18,
+                                    color: Colors.grey.shade600,
                                   ),
                                 ),
-                                if (isMe) ...[
-                                  SizedBox(width: 8),
-                                  CircleAvatar(
-                                    radius: 16,
-                                    backgroundColor: Colors.green.shade600,
-                                    child: Text(
-                                      'S',
-                                      style: TextStyle(
-                                        color: Colors.white,
-                                        fontSize: 12,
-                                        fontWeight: FontWeight.bold,
-                                      ),
-                                    ),
+                                SizedBox(height: 8),
+                                Text(
+                                  'Start a conversation with ${widget.teacherName}',
+                                  style: TextStyle(
+                                    fontSize: 14,
+                                    color: Colors.grey.shade500,
                                   ),
-                                ],
+                                ),
                               ],
                             ),
                           );
-                        },
-                      );
-                    },
+                        }
+
+                        final messages =
+                            snapshot.data!.docs
+                                .map((doc) => MessageModel.fromFirestore(doc))
+                                .toList();
+
+                        return ListView.builder(
+                          controller: _scrollController,
+                          padding: EdgeInsets.all(16),
+                          itemCount: messages.length,
+                          itemBuilder: (context, index) {
+                            final message = messages[index];
+                            final isMe = message.senderId == currentUser?.uid;
+
+                            return Container(
+                              margin: EdgeInsets.only(bottom: 12),
+                              child: Row(
+                                mainAxisAlignment:
+                                    isMe
+                                        ? MainAxisAlignment.end
+                                        : MainAxisAlignment.start,
+                                children: [
+                                  if (!isMe) ...[
+                                    CircleAvatar(
+                                      radius: 16,
+                                      backgroundColor: Colors.blue.shade600,
+                                      child: Text(
+                                        widget.teacherName[0].toUpperCase(),
+                                        style: TextStyle(
+                                          color: Colors.white,
+                                          fontSize: 12,
+                                          fontWeight: FontWeight.bold,
+                                        ),
+                                      ),
+                                    ),
+                                    SizedBox(width: 8),
+                                  ],
+                                  Flexible(
+                                    child: Container(
+                                      padding: EdgeInsets.symmetric(
+                                        horizontal: 16,
+                                        vertical: 12,
+                                      ),
+                                      decoration: BoxDecoration(
+                                        color:
+                                            isMe
+                                                ? Colors.blue.shade600
+                                                : Colors.grey.shade200,
+                                        borderRadius: BorderRadius.circular(20),
+                                      ),
+                                      child: Column(
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.start,
+                                        children: [
+                                          Text(
+                                            message.message,
+                                            style: TextStyle(
+                                              color:
+                                                  isMe
+                                                      ? Colors.white
+                                                      : Colors.black87,
+                                              fontSize: 16,
+                                            ),
+                                          ),
+                                          SizedBox(height: 4),
+                                          Text(
+                                            _formatTime(message.timestamp),
+                                            style: TextStyle(
+                                              color:
+                                                  isMe
+                                                      ? Colors.white70
+                                                      : Colors.grey.shade600,
+                                              fontSize: 12,
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                  ),
+                                  if (isMe) ...[
+                                    SizedBox(width: 8),
+                                    CircleAvatar(
+                                      radius: 16,
+                                      backgroundColor: Colors.green.shade600,
+                                      child: Text(
+                                        'S',
+                                        style: TextStyle(
+                                          color: Colors.white,
+                                          fontSize: 12,
+                                          fontWeight: FontWeight.bold,
+                                        ),
+                                      ),
+                                    ),
+                                  ],
+                                ],
+                              ),
+                            );
+                          },
+                        );
+                      },
+                    ),
                   ),
-                ),
-                Container(
-                  padding: EdgeInsets.all(16),
-                  decoration: BoxDecoration(
-                    color: Colors.white,
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.grey.shade300,
-                        blurRadius: 4,
-                        offset: Offset(0, -2),
-                      ),
-                    ],
-                  ),
-                  child: Row(
-                    children: [
-                      Expanded(
-                        child: TextField(
-                          controller: _messageController,
-                          decoration: InputDecoration(
-                            hintText: 'Type a message...',
-                            border: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(25),
-                              borderSide: BorderSide.none,
-                            ),
-                            filled: true,
-                            fillColor: Colors.grey.shade100,
-                            contentPadding: EdgeInsets.symmetric(
-                              horizontal: 20,
-                              vertical: 12,
-                            ),
-                          ),
-                          maxLines: null,
-                          onSubmitted: (_) => _sendMessage(),
+                  Container(
+                    padding: EdgeInsets.all(16),
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.grey.shade300,
+                          blurRadius: 4,
+                          offset: Offset(0, -2),
                         ),
-                      ),
-                      SizedBox(width: 12),
-                      FloatingActionButton(
-                        onPressed: _sendMessage,
-                        backgroundColor: Colors.blue.shade600,
-                        mini: true,
-                        child: Icon(Icons.send, color: Colors.white),
-                      ),
-                    ],
+                      ],
+                    ),
+                    child: Row(
+                      children: [
+                        Expanded(
+                          child: TextField(
+                            controller: _messageController,
+                            decoration: InputDecoration(
+                              hintText: 'Type a message...',
+                              border: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(25),
+                                borderSide: BorderSide.none,
+                              ),
+                              filled: true,
+                              fillColor: Colors.grey.shade100,
+                              contentPadding: EdgeInsets.symmetric(
+                                horizontal: 20,
+                                vertical: 12,
+                              ),
+                            ),
+                            maxLines: null,
+                            onSubmitted: (_) => _sendMessage(),
+                          ),
+                        ),
+                        SizedBox(width: 12),
+                        FloatingActionButton(
+                          onPressed: _sendMessage,
+                          backgroundColor: Colors.blue.shade600,
+                          mini: true,
+                          child: Icon(Icons.send, color: Colors.white),
+                        ),
+                      ],
+                    ),
                   ),
-                ),
-              ],
-            ),
+                ],
+              ),
     );
   }
 
@@ -3578,9 +4110,12 @@ class _TeacherChatScreenState extends State<TeacherChatScreen> {
   void _sendMessage() async {
     if (_messageController.text.trim().isEmpty || _chatRoomId == null) return;
 
-    await _chatService.sendMessage(_chatRoomId!, _messageController.text.trim());
+    await _chatService.sendMessage(
+      _chatRoomId!,
+      _messageController.text.trim(),
+    );
     _messageController.clear();
-    
+
     // Scroll to bottom
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (_scrollController.hasClients) {
@@ -3601,188 +4136,198 @@ class _TeacherChatScreenState extends State<TeacherChatScreen> {
         backgroundColor: Colors.green.shade600,
         foregroundColor: Colors.white,
       ),
-      body: _chatRoomId == null
-          ? Center(child: CircularProgressIndicator())
-          : Column(
-              children: [
-                Expanded(
-                  child: StreamBuilder<QuerySnapshot>(
-                    stream: _chatService.getMessages(_chatRoomId!),
-                    builder: (context, snapshot) {
-                      if (snapshot.connectionState == ConnectionState.waiting) {
-                        return Center(child: CircularProgressIndicator());
-                      }
+      body:
+          _chatRoomId == null
+              ? Center(child: CircularProgressIndicator())
+              : Column(
+                children: [
+                  Expanded(
+                    child: StreamBuilder<QuerySnapshot>(
+                      stream: _chatService.getMessages(_chatRoomId!),
+                      builder: (context, snapshot) {
+                        if (snapshot.connectionState ==
+                            ConnectionState.waiting) {
+                          return Center(child: CircularProgressIndicator());
+                        }
 
-                      if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
-                        return Center(
-                          child: Column(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              Icon(
-                                Icons.chat_bubble_outline,
-                                size: 64,
-                                color: Colors.grey.shade400,
-                              ),
-                              SizedBox(height: 16),
-                              Text(
-                                'No chat yet',
-                                style: TextStyle(
-                                  fontSize: 18,
-                                  color: Colors.grey.shade600,
-                                ),
-                              ),
-                              SizedBox(height: 8),
-                              Text(
-                                'Start a conversation with ${widget.studentName}',
-                                style: TextStyle(
-                                  fontSize: 14,
-                                  color: Colors.grey.shade500,
-                                ),
-                              ),
-                            ],
-                          ),
-                        );
-                      }
-
-                      final messages = snapshot.data!.docs
-                          .map((doc) => MessageModel.fromFirestore(doc))
-                          .toList();
-
-                      return ListView.builder(
-                        controller: _scrollController,
-                        padding: EdgeInsets.all(16),
-                        itemCount: messages.length,
-                        itemBuilder: (context, index) {
-                          final message = messages[index];
-                          final isMe = message.senderId == currentUser?.uid;
-
-                          return Container(
-                            margin: EdgeInsets.only(bottom: 12),
-                            child: Row(
-                              mainAxisAlignment: isMe
-                                  ? MainAxisAlignment.end
-                                  : MainAxisAlignment.start,
+                        if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
+                          return Center(
+                            child: Column(
+                              mainAxisAlignment: MainAxisAlignment.center,
                               children: [
-                                if (!isMe) ...[
-                                  CircleAvatar(
-                                    radius: 16,
-                                    backgroundColor: Colors.blue.shade600,
-                                    child: Text(
-                                      widget.studentName[0].toUpperCase(),
-                                      style: TextStyle(
-                                        color: Colors.white,
-                                        fontSize: 12,
-                                        fontWeight: FontWeight.bold,
-                                      ),
-                                    ),
-                                  ),
-                                  SizedBox(width: 8),
-                                ],
-                                Flexible(
-                                  child: Container(
-                                    padding: EdgeInsets.symmetric(
-                                      horizontal: 16,
-                                      vertical: 12,
-                                    ),
-                                    decoration: BoxDecoration(
-                                      color: isMe
-                                          ? Colors.green.shade600
-                                          : Colors.grey.shade200,
-                                      borderRadius: BorderRadius.circular(20),
-                                    ),
-                                    child: Column(
-                                      crossAxisAlignment: CrossAxisAlignment.start,
-                                      children: [
-                                        Text(
-                                          message.message,
-                                          style: TextStyle(
-                                            color: isMe ? Colors.white : Colors.black87,
-                                            fontSize: 16,
-                                          ),
-                                        ),
-                                        SizedBox(height: 4),
-                                        Text(
-                                          _formatTime(message.timestamp),
-                                          style: TextStyle(
-                                            color: isMe
-                                                ? Colors.white70
-                                                : Colors.grey.shade600,
-                                            fontSize: 12,
-                                          ),
-                                        ),
-                                      ],
-                                    ),
+                                Icon(
+                                  Icons.chat_bubble_outline,
+                                  size: 64,
+                                  color: Colors.grey.shade400,
+                                ),
+                                SizedBox(height: 16),
+                                Text(
+                                  'No chat yet',
+                                  style: TextStyle(
+                                    fontSize: 18,
+                                    color: Colors.grey.shade600,
                                   ),
                                 ),
-                                if (isMe) ...[
-                                  SizedBox(width: 8),
-                                  CircleAvatar(
-                                    radius: 16,
-                                    backgroundColor: Colors.green.shade600,
-                                    child: Text(
-                                      'T',
-                                      style: TextStyle(
-                                        color: Colors.white,
-                                        fontSize: 12,
-                                        fontWeight: FontWeight.bold,
-                                      ),
-                                    ),
+                                SizedBox(height: 8),
+                                Text(
+                                  'Start a conversation with ${widget.studentName}',
+                                  style: TextStyle(
+                                    fontSize: 14,
+                                    color: Colors.grey.shade500,
                                   ),
-                                ],
+                                ),
                               ],
                             ),
                           );
-                        },
-                      );
-                    },
+                        }
+
+                        final messages =
+                            snapshot.data!.docs
+                                .map((doc) => MessageModel.fromFirestore(doc))
+                                .toList();
+
+                        return ListView.builder(
+                          controller: _scrollController,
+                          padding: EdgeInsets.all(16),
+                          itemCount: messages.length,
+                          itemBuilder: (context, index) {
+                            final message = messages[index];
+                            final isMe = message.senderId == currentUser?.uid;
+
+                            return Container(
+                              margin: EdgeInsets.only(bottom: 12),
+                              child: Row(
+                                mainAxisAlignment:
+                                    isMe
+                                        ? MainAxisAlignment.end
+                                        : MainAxisAlignment.start,
+                                children: [
+                                  if (!isMe) ...[
+                                    CircleAvatar(
+                                      radius: 16,
+                                      backgroundColor: Colors.blue.shade600,
+                                      child: Text(
+                                        widget.studentName[0].toUpperCase(),
+                                        style: TextStyle(
+                                          color: Colors.white,
+                                          fontSize: 12,
+                                          fontWeight: FontWeight.bold,
+                                        ),
+                                      ),
+                                    ),
+                                    SizedBox(width: 8),
+                                  ],
+                                  Flexible(
+                                    child: Container(
+                                      padding: EdgeInsets.symmetric(
+                                        horizontal: 16,
+                                        vertical: 12,
+                                      ),
+                                      decoration: BoxDecoration(
+                                        color:
+                                            isMe
+                                                ? Colors.green.shade600
+                                                : Colors.grey.shade200,
+                                        borderRadius: BorderRadius.circular(20),
+                                      ),
+                                      child: Column(
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.start,
+                                        children: [
+                                          Text(
+                                            message.message,
+                                            style: TextStyle(
+                                              color:
+                                                  isMe
+                                                      ? Colors.white
+                                                      : Colors.black87,
+                                              fontSize: 16,
+                                            ),
+                                          ),
+                                          SizedBox(height: 4),
+                                          Text(
+                                            _formatTime(message.timestamp),
+                                            style: TextStyle(
+                                              color:
+                                                  isMe
+                                                      ? Colors.white70
+                                                      : Colors.grey.shade600,
+                                              fontSize: 12,
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                  ),
+                                  if (isMe) ...[
+                                    SizedBox(width: 8),
+                                    CircleAvatar(
+                                      radius: 16,
+                                      backgroundColor: Colors.green.shade600,
+                                      child: Text(
+                                        'T',
+                                        style: TextStyle(
+                                          color: Colors.white,
+                                          fontSize: 12,
+                                          fontWeight: FontWeight.bold,
+                                        ),
+                                      ),
+                                    ),
+                                  ],
+                                ],
+                              ),
+                            );
+                          },
+                        );
+                      },
+                    ),
                   ),
-                ),
-                Container(
-                  padding: EdgeInsets.all(16),
-                  decoration: BoxDecoration(
-                    color: Colors.white,
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.grey.shade300,
-                        blurRadius: 4,
-                        offset: Offset(0, -2),
-                      ),
-                    ],
-                  ),
-                  child: Row(
-                    children: [
-                      Expanded(
-                        child: TextField(
-                          controller: _messageController,
-                          decoration: InputDecoration(
-                            hintText: 'Type a message...',
-                            border: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(25),
-                              borderSide: BorderSide.none,
-                            ),
-                            filled: true,
-                            fillColor: Colors.grey.shade100,
-                            contentPadding: EdgeInsets.symmetric(
-                              horizontal: 20,
-                              vertical: 12,
-                            ),
-                          ),
-                          maxLines: null,
-                          onSubmitted: (_) => _sendMessage(),
+                  Container(
+                    padding: EdgeInsets.all(16),
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.grey.shade300,
+                          blurRadius: 4,
+                          offset: Offset(0, -2),
                         ),
-                      ),
-                      SizedBox(width: 12),
-                      FloatingActionButton(
-                        onPressed: _sendMessage,
-                        backgroundColor: Colors.green.shade600,
-                        mini: true,
-                        child: Icon(Icons.send, color: Colors.white),
-                      ),
-                    ],
+                      ],
+                    ),
+                    child: Row(
+                      children: [
+                        Expanded(
+                          child: TextField(
+                            controller: _messageController,
+                            decoration: InputDecoration(
+                              hintText: 'Type a message...',
+                              border: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(25),
+                                borderSide: BorderSide.none,
+                              ),
+                              filled: true,
+                              fillColor: Colors.grey.shade100,
+                              contentPadding: EdgeInsets.symmetric(
+                                horizontal: 20,
+                                vertical: 12,
+                              ),
+                            ),
+                            maxLines: null,
+                            onSubmitted: (_) => _sendMessage(),
+                          ),
+                        ),
+                        SizedBox(width: 12),
+                        FloatingActionButton(
+                          onPressed: _sendMessage,
+                          backgroundColor: Colors.green.shade600,
+                          mini: true,
+                          child: Icon(Icons.send, color: Colors.white),
+                        ),
+                      ],
+                    ),
                   ),
-                ),
-              ],
-            ),
+                ],
+              ),
     );
   }
 
@@ -3810,3 +4355,187 @@ class _TeacherChatScreenState extends State<TeacherChatScreen> {
 }
 
 //
+
+class VideoCallScreen extends StatefulWidget {
+  const VideoCallScreen({Key? key}) : super(key: key);
+
+  @override
+  _VideoCallScreenState createState() => _VideoCallScreenState();
+}
+
+class _VideoCallScreenState extends State<VideoCallScreen> {
+  bool _isMuted = false;
+  bool _isCameraOff = false;
+  bool _isSpeakerOn = true;
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: Colors.black,
+      body: Stack(
+        children: [
+          // Main video (teacher)
+          Center(
+            child: Container(
+              width: double.infinity,
+              height: double.infinity,
+              color: Colors.grey[900],
+              child: Center(
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    CircleAvatar(
+                      radius: 60,
+                      backgroundColor: Colors.blue.shade600,
+                      child: Icon(Icons.person, size: 60, color: Colors.white),
+                    ),
+                    const SizedBox(height: 16),
+                    Text(
+                      "Teacher",
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontSize: 24,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    const Text(
+                      'Connecting...',
+                      style: TextStyle(color: Colors.white70, fontSize: 16),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+
+          // Self view - Camera on/off er upor depend kore
+          Positioned(
+            top: 60,
+            right: 16,
+            child: Container(
+              width: 120,
+              height: 180,
+              decoration: BoxDecoration(
+                color: Colors.grey[800],
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(color: Colors.white, width: 2),
+              ),
+              child: _isCameraOff
+                  ? const Center(
+                      child: Icon(Icons.person, size: 60, color: Colors.white),
+                    )
+                  : Container(
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(10),
+                        // Eikhane actual camera preview thakbe
+                        // Apnar real app e camera package use kore video feed show korben
+                        color: Colors.black,
+                      ),
+                      child: const Center(
+                        child: Icon(Icons.videocam, size: 40, color: Colors.white),
+                      ),
+                    ),
+            ),
+          ),
+
+          // Call controls
+          Positioned(
+            bottom: 40,
+            left: 0,
+            right: 0,
+            child: Column(
+              children: [
+                const SizedBox(height: 16),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    _buildCallButton(
+                      icon: _isMuted ? Icons.mic_off : Icons.mic,
+                      color: _isMuted ? Colors.red : Colors.white,
+                      onPressed: () {
+                        setState(() {
+                          _isMuted = !_isMuted;
+                        });
+                      },
+                      label: _isMuted ? 'Unmute' : 'Mute',
+                    ),
+                    const SizedBox(width: 16),
+                    _buildCallButton(
+                      icon: _isCameraOff ? Icons.videocam_off : Icons.videocam,
+                      color: _isCameraOff ? Colors.red : Colors.white,
+                      onPressed: () {
+                        setState(() {
+                          _isCameraOff = !_isCameraOff;
+                        });
+                      },
+                      label: _isCameraOff ? 'Camera On' : 'Camera Off',
+                    ),
+                    const SizedBox(width: 16),
+                    _buildCallButton(
+                      icon: _isSpeakerOn ? Icons.volume_up : Icons.volume_off,
+                      color: _isSpeakerOn ? Colors.white : Colors.grey,
+                      onPressed: () {
+                        setState(() {
+                          _isSpeakerOn = !_isSpeakerOn;
+                        });
+                      },
+                      label: _isSpeakerOn ? 'Speaker' : 'Speaker Off',
+                    ),
+                    const SizedBox(width: 16),
+                    _buildCallButton(
+                      icon: Icons.call_end_outlined,
+                      color: Colors.white,
+                      backgroundColor: Colors.red,
+                      onPressed: () {
+                        Navigator.pop(context);
+                      },
+                      label: 'End',
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ),
+
+          // Back button
+          Positioned(
+            top: 40,
+            left: 16,
+            child: IconButton(
+              icon: const Icon(Icons.arrow_back, color: Colors.white),
+              onPressed: () => Navigator.pop(context),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildCallButton({
+    required IconData icon,
+    required Color color,
+    Color? backgroundColor,
+    required VoidCallback onPressed,
+    required String label,
+  }) {
+    return Column(
+      children: [
+        Container(
+          width: 60,
+          height: 60,
+          decoration: BoxDecoration(
+            color: backgroundColor ?? Colors.grey[800],
+            shape: BoxShape.circle,
+          ),
+          child: IconButton(
+            icon: Icon(icon, color: color, size: 28),
+            onPressed: onPressed,
+          ),
+        ),
+        const SizedBox(height: 8),
+        Text(label, style: const TextStyle(color: Colors.white, fontSize: 12)),
+      ],
+    );
+  }
+}
